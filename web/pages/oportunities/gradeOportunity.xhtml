@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <header>
+        <h:outputStylesheet library="css" name="style.css"/>
+    </header>
+    <body>
+
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+            <ui:define name="content">
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+                <script src="http://chingyawhao.github.io/js/materialize.clockpicker.js"></script>
+                <link href="http://chingyawhao.github.io/css/materialize.clockpicker.css" rel="stylesheet"></link>
+
+                <div class="container">
+                    <h:form id="calificar" styleClass="contenedor">
+                        <h3 class="center-title">#{msgs['Oportunity.Table.grade']}</h3>
+
+                        <div class="card-content">
+                            <p:dataTable id="OportunidadGrade" var="oportunidad" value="#{oportunidadController.listarOportunidadesUsuarios()}"
+                                         paginator="true" rows="10" paginatorPosition="bottom" >
+
+                                <p:column headerText="#{msgs['Oportunity.agents']}" filterMatchMode="contains"
+                                          filterBy="#{oportunidad.usuarioID.nombre}">
+                                    <h:outputText value="#{oportunidad.usuarioID.nombre}
+                                                  #{oportunidad.usuarioID.apellido}"/>
+                                </p:column>
+                                <p:column headerText="#{msgs['Oportunity.name']}" filterMatchMode="contains"
+                                          filterBy="#{oportunidad.oportunidadID.nombre}">
+                                    <h:outputText value="#{oportunidad.oportunidadID.nombre}"/>
+                                </p:column>
+                                <p:column headerText="#{msgs['Oportunity.Table.Grade.state']}" filterMatchMode="contains"
+                                          filterBy="#{oportunidad.estadoID.descripcion}">
+                                    <h:outputText value="#{oportunidad.estadoID.descripcion}"/>
+                                </p:column>
+                                <p:column headerText="#{msgs['Common.Table.action']}" styleClass="center-title">
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink  oncomplete="PF('verOportunidad').show()" styleClass="acciones-ver"
+                                                        update="modalVerOportunidad, calificar:OportunidadGrade " 
+                                                        actionListener="#{oportunidadController.calificarOportunidad(oportunidad)}">
+                                            <i class="material-icons">visibility</i>
+                                        </p:commandLink>
+                                    </li>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </h:form>
+                </div>
+
+                <p:dialog id="modalVerOportunidad" styleClass="modal" 
+                          modal="true" widgetVar="verOportunidad" draggable="false"
+                          showEffect="fade" hideEffect="fade" resizable="false" closable="false"
+                          height="350" width="500" minHeight="150">
+                    <h5 class="center-title">#{msgs['Oportunity.Modal.Detail']}</h5>
+                    <p:outputPanel>
+                        <h:form id="ff" styleClass="modal-content" acceptcharset="ISO-8859-1">
+                            <p:growl id="growlCalificarOportunities" showDetail="true" showSummary="false"  sticky="false" life="3000"/> 
+
+                            <p:panelGrid columns="2" id="panelGrade">
+                                <h:outputText value="#{msgs['Oportunity.name']}" />
+                                <h:outputText id="nombre" value="#{oportunidadController.oportunidadUsuario.oportunidadID.nombre}"/>
+
+                                <h:outputText value="#{msgs['Oportunity.Table.Grade.agent']}" />
+                                <h:outputText id="usuario" value="#{oportunidadController.oportunidadUsuario.usuarioID.nombre}
+                                              #{oportunidadController.oportunidadUsuario.usuarioID.apellido}"/>
+
+                                <h:outputText value="#{msgs['Oportunity.description']}" />
+                                <h:outputText id="descripcion" value="#{oportunidadController.oportunidadUsuario.descripcion}"/>
+
+                                <h:outputText value="#{msgs['Common.Table.attachement']}" rendered="#{oportunidadController.oportunidadUsuario.archivo != null}"/>
+                                <p:commandButton ajax="false" immediate="true" value="Descargar" styleClass="btn waves-effect waves-light btn-modifyAccount"
+                                                 rendered="#{oportunidadController.oportunidadUsuario.archivo != null}" >
+                                    <p:fileDownload value="#{oportunidadController.downloadfile}"/>
+                                    <i class="material-icons left">play_for_work</i>
+                                </p:commandButton>
+
+                                <h:outputText value="#{msgs['Strength.strength']}"
+                                              rendered="#{oportunidadController.oportunidadUsuario.oportunidadID.tipoOportunidadID.tipoID eq 1}"/>
+                                <h:commandButton value="#{msgs['Oportunity.Modal.showStrength.button']}" styleClass="btn waves-effect waves-light btn-modifyAccount"
+                                                 actionListener="#{oportunidadController.abrirModalFortaleza()}" immediate="true"
+                                                 rendered="#{oportunidadController.oportunidadUsuario.oportunidadID.tipoOportunidadID.tipoID eq 1}"/>
+
+                                <h:outputText value="#{msgs['Oportunity.Table.Grade.state']}" />
+                                <p:selectOneMenu id="estado" value="#{oportunidadController.oportunidadUsuario.estadoID}"
+                                                 converter="estadosOportunidadConverter" required="true"  requiredMessage="#{msgs['Oportunity.required.Message.grade']}"
+                                                 disabled="#{oportunidadController.estadoInicialOportunidadUsuario == 2 eq true}" > 
+
+                                    <f:selectItem noSelectionOption="true" value="#{null}" itemLabel="#{msgs['Common.Modal.Select.grade']}"/>
+
+                                    <f:selectItems value="#{oportunidadController.estadosOportunidad}" var="ser"
+                                                   itemLabel="#{ser.descripcion}" itemValue="#{ser}"/>
+
+                                    <f:ajax event="change" listener="#{oportunidadController.prb}" render="prbS"/>
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+                            <p:panelGrid id="prbS"  >
+                                <div class="row">
+                                    <h:panelGroup rendered="#{oportunidadController.banderaSelect eq true}" >
+                                        <h6>#{msgs['Oportunity.finishDate.new']}</h6>
+                                        <div class="input-field col s6">
+                                            <label for="endDate" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.date']}</label>
+                                            <input type="date" class="datepicker" id="endDate" onclick="$('#endDate').pickadate({selectMonths: true, selectYears: 15, format: 'yyyy-mm-dd'});" jsf:value="#{oportunidadController.fechaFin}"/>
+                                        </div>
+                                        <div class="input-field col s6">
+                                            <label for="input_endTime" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.time']}</label>
+                                            <input id="input_endTime" class="timepicker" type="text" onclick="$('#input_endTime').clockpicker({placement: 'bottom', align: 'left', twelvehour: false});" jsf:value="#{oportunidadController.horaFin}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </p:panelGrid>
+
+                            <div class="row">
+                                <div class="input-field col s12">
+                                    <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                     update=":calificar:OportunidadGrade, ff:growlCalificarOportunities, ff, modalVerOportunidad"
+                                                     actionListener="#{oportunidadController.ocultarModal(4)}" />
+                                    <p:commandButton  value="#{msgs['Oportunity.Table.Grade.gradeButton']}" styleClass="btn waves-effect waves-light"  
+                                                      update=":calificar:OportunidadGrade, ff:growlCalificarOportunities"                                                     
+                                                      disabled="#{oportunidadController.estadoInicialOportunidadUsuario == 2 eq true}"
+                                                      actionListener="#{oportunidadController.ocultarModalCalificar()}"/>
+                                </div>
+                            </div>
+
+                        </h:form>
+                    </p:outputPanel>
+                </p:dialog> 
+
+                <p:dialog id="modalVerFortaleza" styleClass="modal"
+                          modal="true" widgetVar="verFortaleza" draggable="false"
+                          showEffect="fade" hideEffect="fade" resizable="false" closable="false">
+
+                    <h:form id="datailFormStrength" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Strength.Modal.DetailTitle']}</h5>
+                        <p:growl id="growlCalificarOportunitiesStrength" showSummary="false" showDetail="true" sticky="false" life="3000"/> 
+                        <p:outputPanel>
+                            <p:panelGrid columns="2" id="DetailPanelSt">
+
+                                <h:outputText value="#{msgs['Strength.author']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.usuarioID.nombre}
+                                              #{fortalezaController.fortaleza.usuarioID.apellido}"/>
+
+                                <h:outputText value="#{msgs['Strength.category']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.categoriaID.descripcion}"/>
+
+                                <h:outputText value="#{msgs['Strength.name']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.nombre}"/>                                    
+
+                                <h:outputText value="#{msgs['Strength.description']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.descripcion}"/>
+
+                                <h:outputText value="#{msgs['Common.Table.attachement']}" rendered="#{fortalezaController.fortaleza.archivo != null}"/>
+                                <p:commandButton ajax="false" immediate="true" styleClass="btn waves-effect waves-light btn-modifyAccount"
+                                                 rendered="#{fortalezaController.fortaleza.archivo != null}" value="Descargar" >
+                                    <p:fileDownload value="#{fortalezaController.downloadfile}"/>
+                                    <i class="material-icons left">play_for_work</i>
+                                </p:commandButton>
+
+                            </p:panelGrid>
+                        </p:outputPanel>
+                        <div class="input-field col s12">
+                            <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning btn-close"
+                                             actionListener="#{oportunidadController.cerrarModalFortaleza(2)}"/>
+                        </div>
+                    </h:form>
+                </p:dialog> 
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

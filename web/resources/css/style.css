@@ -1,0 +1,307 @@
+.chartDash{
+    width: 100%;
+    height: 500px;
+}
+.ui-menubar{
+    height: 100% !important;
+    padding: 0px !important;
+}
+.nav-wrapper{
+    background: #164063 !important;
+}
+.row .col {
+    float: left;
+    box-sizing: border-box;
+    padding: 0 !important;
+    min-height: 1px;
+}
+.ui-menu .ui-menu-parent .ui-menu-child {
+    display: none;
+    width: 12.5em;
+    padding: 0 !important;
+    padding-right: 0px !important;
+    position: absolute;
+    margin: 0;
+    outline: 0;
+    line-height: 1.3;
+    text-decoration: none;
+    font-size: 100%;
+    list-style: none;
+    background: #164063 !important;
+}
+.ui-menubar .ui-menuitem-link{
+    height: 62px !important;
+    margin-top: 0px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    padding-top: 20px !important; 
+    font-size: 20px !important;
+    color: #fff;
+    width: 100% !important;
+}
+
+.logoSigueme{
+    margin-top: 3px !important;
+    margin-right: 200px;
+}
+.cont{
+    margin-top: 6% !important;
+}
+.modal{
+    width: 50% !important;
+    margin-right: 330px !important
+}
+.card .card-image .card-title{
+    top:0 !important;
+}
+.ui-dialog .ui-dialog-titlebar{
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 0 !important;
+}
+.amcharts-chart-div a {
+    display:none !important;
+}
+.page-footer{
+    background: #164063 !important;
+}
+.light, .page-footer .footer-copyr{
+    opacity: 0.2;
+}
+.ui-selectonemenu-panel{
+    width: 42% !important;
+    background: #fafafa !important;
+}
+.ui-selectonemenu{
+    width: 100% !important;
+}
+.ui-selectonemenu-panel .ui-selectonemenu-filter-container{
+    width: 100% !important;  
+}
+
+.ui-selectonemenu label.ui-selectonemenu-label{
+    font-size: 16px !important;
+    color: black !important;
+}
+.imgPreLoad{
+    width: 300px;
+    height: 300px;
+}
+
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+/*Desde aqui hizo Santi me encargué de la paginación algunos botones y los label que deben quedar arriba*/
+
+/*Esta clase se utiliza para que el outputlabel suba en el modificar*/
+.topOutputlabel{
+    transform: translateY(-140%) !important;
+}
+
+.letra{
+    color:#fff;
+}
+
+.toUpperCase {
+    text-transform: uppercase;
+}
+/*Color de los números del paginador*/
+.ui-paginator .ui-paginator-page, .ui-paginator-current{
+    color : #006AEA !important;
+}
+.ui-paginator .ui-paginator-first{
+    display: inline-block;
+    padding: 1px 12px  !important;
+    background-image:  url("../..//resources/img/rebobinar.png");
+}
+.ui-paginator .ui-paginator-prev{
+    margin-left: 10px !important;
+    background-image:  url("../..//resources/img/rebobinar.png");
+}
+
+.ui-paginator .ui-paginator-last{
+    display: inline-block;
+    padding: 1px 12px  !important;
+    background-image:  url("../..//resources/img/last.png");
+}
+.ui-paginator .ui-paginator-next{
+    background-image:  url("../..//resources/img/last.png");
+    margin-right: 10px !important;
+}
+
+.btn-warning{
+    background-color:  #EC971F !important;
+    margin-bottom: 0px;
+
+}
+
+.btn-modifyAccount{
+    background-color: #61B689 !important;
+}
+
+.btn-modifyAccount:hover{
+    background-color: #61D589 !important;
+}
+
+.btn-warning:hover{
+    /*#FC9700*/
+    background-color:  #FF8200 !important;
+}
+
+.btn-close{
+    margin-top: 11px;
+    margin-left: 200px;
+    margin-bottom: 0px;
+}
+
+.menu-upload{
+    background-color: #FFA23A;
+}
+.menu-register{
+    background-color: #164063;
+}
+
+.menu-exportPdf{
+    background-color: #F44336;
+}
+
+.menu-exportXls{
+    background-color: #4da462;
+}
+
+.acciones-editar{
+    color: #2BBBAD !important;
+}
+.acciones-ver{
+    color: orange !important;
+}
+
+.acciones-eliminar{
+    color: #F44336 !important;
+}
+.ui-state-disabled{
+    color: grey !important;
+}
+
+.ui-selectcheckboxmenu .ui-selectcheckboxmenu-label{
+    font-size: 16px !important;
+    color: black !important;
+}
+
+.peque{
+    width: 90% !important;
+    margin-right: 5% !important;
+}
+
+.ui-growl-item{
+    background-color: white;
+    color: black;
+    font-size: 1.1em;
+    font-weight: bold !important;
+    padding-top: 0px;
+    border: 1px solid grey;
+}
+
+.ui-dialog .ui-dialog-content{
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.margin-form{
+    margin-left: 40px !important;
+}
+
+.margin-formTable{
+    margin-left: 50px !important; 
+    margin-top: 20px !important;
+}
+.margin-table{
+    margin-bottom: 20px;
+}
+
+.center-title{
+    text-align: center;
+}
+
+.ui-widget-overlay{
+    background-color: #1f2226 !important;
+    opacity: .60;
+}
+.margin-buton{
+    margin-right:  5px;
+}
+/*selectCheckBox*/
+.ui-selectonemenu-panel,.ui-selectcheckboxmenu-panel{
+    width: 42% !important;
+    background: #fafafa !important;
+}
+.ui-chkbox .ui-chkbox-box{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    z-index: 0;
+    border: 2px solid #5a5a5a;
+    border-radius: 1px;
+    margin-top: 2px;
+    transition: .2s
+}
+.ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-list-item label{
+    font-size: 14px;
+    color: #26a69a;
+    display: block;
+    line-height: 12px;
+    padding: 5px 10px;
+}
+.ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-list-item label:hover{
+    background: #ccc;
+    cursor: pointer;
+}
+.ui-selectcheckboxmenu-header .ui-chkbox {
+    display: none !important;
+}
+.ui-selectcheckboxmenu .ui-selectcheckboxmenu-label{
+    width: 550px !important;
+}
+.ui-selectcheckboxmenu-header .ui-inputfield{
+    width: 400px;
+}
+.ui-chkbox-box.ui-corner-all.ui-state-active.ui-state-default.ui-widget{
+    top: -4px;
+    left: -5px;
+    width: 12px;
+    height: 22px;
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid #26a69a;
+    border-bottom: 2px solid #26a69a;
+    -webkit-transform: rotate(40deg);
+    transform: rotate(40deg);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform-origin: 100% 100%;
+    transform-origin: 100% 100%
+}
+.ui-selectonemenu{
+    width: 100% !important;
+}
+.ui-selectonemenu-panel .ui-selectonemenu-filter-container{
+    width: 100% !important;  
+}
+.ui-selectonemenu label.ui-selectonemenu-label{
+    font-size: 16px !important;
+}
+.picker--opened .picker__holder{
+    background: transparent !important;
+}
+
+.margin-button{
+    margin-bottom: 30px;
+}
+
+.outputGrande{
+    font-size: 1.1em !important;
+    color: black !important;
+}

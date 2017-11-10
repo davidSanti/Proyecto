@@ -1,0 +1,268 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    <header>
+        <h:outputStylesheet library="css" name="style.css"/>
+    </header>
+    <body>
+
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <div class="container">
+                        <h:form id="form">
+                            <h3 class="center-title">#{msgs['Strength.Table.title']}</h3>
+                            <p:growl id="growlSt" showDetail="true" showSummary="false" sticky="false" life="5000"/> 
+                            <div class="fixed-action-btn toolbar">
+                                <a class="btn-floating btn-large red">
+                                    <i class="large material-icons">menu</i>
+                                </a>
+                                <ul>
+                                    <li class="waves-effect waves-light menu-exportPdf">
+                                        <h:commandLink>
+                                            <p:graphicImage url="/resources/img/pdf.png" width="55" height="58"/>
+                                            <p:dataExporter type="pdf" target="StrengthTable" fileName="#{msgs['Strength.NameStrength']}"/>
+                                        </h:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light menu-exportXls">
+                                        <h:commandLink>
+                                            <p:graphicImage url="/resources/img/excel.png" width="40" height="40" style="margin-top: 9px;"/>
+                                            <p:dataExporter type="xls" target="StrengthTable" fileName="#{msgs['Strength.NameStrength']}"/>
+                                        </h:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light menu-register toUpperCase">
+                                        <p:commandLink value="#{msgs['Strength.Table.register']}" update="modalRegisterStrength"
+                                                       oncomplete="PF('registrarFortaleza').show()" />
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-content">
+                                <p:dataTable id="StrengthTable" emptyMessage="#{msgs['Common.Table.noRecords']}"
+                                             var="st" value="#{fortalezaController.listarFortalezas()}"
+                                             paginator="true" paginatorPosition="bottom" rows="10" >
+                                    <p:column headerText="#{msgs['Strength.author']}" filterMatchMode="contains"
+                                              filterBy="#{st.usuarioID.apellido} #{st.usuarioID.nombre}">
+                                        <h:outputText value="#{st.usuarioID.apellido} #{st.usuarioID.nombre}"/>                            
+                                    </p:column>
+                                    <p:column headerText="#{msgs['Strength.category']}" filterMatchMode="contains"
+                                              filterBy="#{st.categoriaID.descripcion}">
+                                        <h:outputText value="#{st.categoriaID.descripcion}"/>                            
+                                    </p:column>
+                                    <p:column headerText="#{msgs['Strength.name']}" filterBy="#{st.nombre}" filterMatchMode="contains">
+                                        <h:outputText value="#{st.nombre}"/>                            
+                                    </p:column>
+                                    <p:column headerText="#{msgs['Common.Table.action']}" width="150" exportable="false" styleClass="center-title">
+
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink oncomplete="PF('verFortaleza').show()" update="modalVerFortaleza" 
+                                                           actionListener="#{fortalezaController.mostrarFortaleza(st)}"
+                                                           styleClass="acciones-ver">
+                                                <i class="material-icons">visibility</i>
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink actionListener="#{fortalezaController.editarFortaleza(st)}" styleClass="acciones-editar"                                                           oncomplete="PF('editarFortaleza').show()" update="modalF"
+                                                           disabled="#{fortalezaController.verificarUsuario(st) eq false}">
+                                                <i class="material-icons">mode_edit</i> 
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink update="StrengthTable, form:growlSt" styleClass="acciones-eliminar"
+                                                           action="#{fortalezaController.eliminarFortaleza(st)}" 
+                                                           disabled="#{fortalezaController.verificarUsuario(st) eq false}">
+                                                <p:confirm/>
+                                                <i class="material-icons">delete</i>
+                                            </p:commandLink>
+                                        </li>
+
+
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </h:form>
+                    </div>
+
+                </f:view>
+
+                <h:form>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                        <div class="modal-content">
+                            <h5 class="center-title">#{msgs['Common.Table.deleteTitleModal']}</h5>
+                            <center> 
+                                <p>#{msgs['Common.Table.deleteMessage']}</p>
+                                <p:commandButton value="#{msgs['Common.Table.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes btn waves-effect waves-light"/>
+                                <p:commandButton value="#{msgs['Common.Table.deleteNo']}" type="button" styleClass="ui-confirmdialog-no btn waves-effect waves-light btn-warning"/>
+                            </center>
+                        </div>
+                    </p:confirmDialog>
+                </h:form>
+
+                <p:dialog id="modalRegisterStrength"  resizable="false" 
+                          draggable="false" closable="false"
+                          widgetVar="registrarFortaleza" modal="true"
+                          showEffect="fade" hideEffect="fade"
+                          styleClass="modal">
+
+                    <h:form id="registerFormS" enctype="multipart/form-data" styleClass="modal-content" acceptcharset="ISO-8859-1">  
+                        <p:growl id="growlRegisterFortaleza" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <h5 class="center-title">#{msgs['Strength.Table.register']}</h5>
+
+                        <div class="row">
+                            <div class="col s12">
+                                <p:outputLabel for="categoria" value="#{msgs['Strength.category']}"/>
+                                <p:selectOneMenu id="categoria" value="#{fortalezaController.fortaleza.categoriaID}"
+                                                 converter="categoriaConverter"  filter="true" 
+                                                 required="true" requiredMessage="#{msgs['Strength.required.Message.category']}">
+
+                                    <f:selectItem noSelectionOption="true" value="#{null}" itemLabel="#{msgs['Common.Modal.Select.category']}"/>
+                                    <f:selectItems var="cate" value="#{fortalezaController.categorias}"
+                                                   itemLabel="#{cate.descripcion}" itemValue="#{cate}"/>
+                                </p:selectOneMenu>  
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputText id="nombre" required="true" requiredMessage="#{msgs['Strength.required.Message.name']}"
+                                             validatorMessage="#{msgs['Strength.Validator.name']}" maxlength="70" pt:minlength="10" pt:required="true"
+                                             value="#{fortalezaController.fortaleza.nombre}" styleClass="input">
+                                    <f:validateLength minimum="10" maximum="70"/>
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['Strength.name']}"/>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="descripcion" required="true" requiredMessage="#{msgs['Strength.required.Message.description']}"
+                                                 validatorMessage="#{msgs['Strength.Validator.description']}" pt:required="true"
+                                                 rows="5" autoResize="false" styleClass="materialize-textarea"
+                                                 value="#{fortalezaController.fortaleza.descripcion}">
+                                    <f:validateLength minimum="15"/>
+                                </p:inputTextarea>
+                                <p:outputLabel for="descripcion" value="#{msgs['Strength.description']}"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="file-field input-field col s12">
+                                <div class="btn">
+                                    <i class="material-icons">attach_file</i>
+                                    <p:fileUpload mode="simple" value="#{fortalezaController.file}"/>
+                                </div>
+                                <div class="file-path-wrapper">
+                                    <input class="file-path validate" type="text" placeholder="#{msgs['Common.Table.attachement']}"></input>
+                                </div>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 actionListener="#{fortalezaController.ocultarModal(1)}"/>
+                                <p:commandButton id="editSFortaleza" value="#{msgs['Strength.Modal.register']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{fortalezaController.ocultarModalRegistrar()}" immediate="false"
+                                                 update=":form:StrengthTable, :form:growlSt" ajax="false"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+
+                <p:dialog id="modalF" resizable="false" draggable="false" closable="false" 
+                          closeOnEscape="true" widgetVar="editarFortaleza" modal="true"
+                          showEffect="fade" hideEffect="fade"  styleClass="modal">
+                    <h:form id="fo" styleClass="modal-content">    
+                        <p:growl id="growlEditFortaleza" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <h5 class="center-title">#{msgs['Strength.Modal.editTitle']}</h5>
+
+                        <div class="row">      
+
+                            <div class=" col s12">
+                                <p:outputLabel for="categoria" value="#{msgs['Strength.category']}"/>
+                                <p:selectOneMenu id="categoria" value="#{fortalezaController.fortaleza.categoriaID}"
+                                                 converter="categoriaConverter"  filter="true"
+                                                 required="true" requiredMessage="#{msgs['Strength.required.Message.category']}">
+                                    <f:selectItems var="cate" value="#{fortalezaController.categorias}"
+                                                   itemLabel="#{cate.descripcion}" itemValue="#{cate}"/>
+                                </p:selectOneMenu>
+                            </div>                            
+                            <div class="input-field col s12">
+                                <p:inputText id="nombre" required="true" requiredMessage="#{msgs['Strength.required.Message.name']}"
+                                             validatorMessage="#{msgs['Strength.Validator.name']}" size="25" maxlength="70"
+                                             value="#{fortalezaController.fortaleza.nombre}" styleClass="input">
+                                    <f:validateLength minimum="10" maximum="70"/>
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['Strength.name']}" styleClass="topOutputlabel"/>                    
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="descripcion" required="true" requiredMessage="#{msgs['Strength.required.Message.description']}"
+                                                 validatorMessage="#{msgs['Strength.Validator.description']}"
+                                                 rows="7" cols="27" autoResize="false" styleClass="materialize-textarea"
+                                                 value="#{fortalezaController.fortaleza.descripcion}">
+                                    <f:validateLength minimum="15"/>
+
+                                </p:inputTextarea>
+                                <p:outputLabel for="descripcion" value="#{msgs['Strength.description']}" styleClass="topOutputlabel"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" 
+                                                 actionListener="#{fortalezaController.ocultarModal(2)}" 
+                                                 update=":form:StrengthTable, :form:growlSt, growlEditFortaleza"
+                                                 styleClass="btn waves-effect waves-light btn-warning"/>
+
+                                <p:commandButton id="editSFortaleza" value="#{msgs['Common.Modal.save']}"
+                                                 actionListener="#{fortalezaController.ocultarModalEditar()}"
+                                                 update=":form:StrengthTable, :form:growlSt, growlEditFortaleza"
+                                                 styleClass="btn waves-effect waves-light"/>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="modalVerFortaleza" styleClass="modal"
+                          modal="true" widgetVar="verFortaleza" draggable="false"
+                          showEffect="fade" hideEffect="fade" resizable="false" closable="false">
+
+                    <h:form id="datailFormStrength" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Strength.Modal.DetailTitle']}</h5>
+                        <p:outputPanel>
+                            <p:panelGrid columns="2" id="DetailPanelSt">
+
+                                <h:outputText value="#{msgs['Strength.author']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.usuarioID.nombre}
+                                              #{fortalezaController.fortaleza.usuarioID.apellido}"/>
+
+                                <h:outputText value="#{msgs['Strength.name']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.nombre}"/> 
+
+                                <h:outputText value="#{msgs['Strength.category']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.categoriaID.descripcion}"/>
+
+                                <h:outputText value="#{msgs['Strength.description']}"/>
+                                <h:outputText value="#{fortalezaController.fortaleza.descripcion}"/>
+
+                                <h:outputText value="#{msgs['Common.Table.attachement']}" rendered="#{fortalezaController.fortaleza.archivo != null}"/>
+                                <p:commandButton ajax="false" immediate="true" styleClass="btn waves-effect waves-light"
+                                                 rendered="#{fortalezaController.fortaleza.archivo != null}" value="#{msgs['Common.Modal.Attach.download']}">
+                                    <p:fileDownload value="#{fortalezaController.downloadfile}"/>
+                                    <i class="material-icons left">play_for_work</i>
+                                </p:commandButton>
+
+                            </p:panelGrid>
+                        </p:outputPanel>
+                        <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true"
+                                         actionListener="#{fortalezaController.ocultarModal(3)}"
+                                         styleClass="btn waves-effect waves-light btn-warning btn-close"/>
+                    </h:form>
+                </p:dialog> 
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,524 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <header>
+        <h:outputStylesheet library="css" name="style.css"/>
+    </header>
+    <body>
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+            <ui:define name="content">
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+                <script src="http://chingyawhao.github.io/js/materialize.clockpicker.js"></script>
+                <link href="http://chingyawhao.github.io/css/materialize.clockpicker.css" rel="stylesheet"></link>
+
+                <div class="container">
+                    <h:form>
+                        <div class="fixed-action-btn toolbar">
+                            <a class="btn-floating btn-large red">
+                                <i class="large material-icons">menu</i>
+                            </a>
+                            <ul>
+                                <li class="waves-effect waves-light menu-exportPdf">
+                                    <h:commandLink>
+                                        <p:graphicImage url="/resources/img/pdf.png" width="55" height="58"/>
+                                        <p:dataExporter type="pdf" target="oportunityTable" fileName="#{msgs['Strength.NameStrength']}"/>
+                                    </h:commandLink>
+                                </li>
+                                <li class="waves-effect waves-light menu-exportXls">
+                                    <h:commandLink>
+                                        <p:graphicImage url="/resources/img/excel.png" width="40" height="40" style="margin-top: 9px;"/>
+                                        <p:dataExporter type="xls" target="oportunityTable" fileName="#{msgs['Strength.NameStrength']}"/>
+                                    </h:commandLink>
+                                </li>
+                                <h:panelGroup rendered="#{incidenciaController.verificarRol() eq false}" >
+                                    <li class="waves-effect waves-light menu-register toUpperCase">
+                                        <p:commandLink oncomplete="PF('registrarOportunidad').show()" update="registro"
+                                                       value="#{msgs['Oportunity.Table.register']}"/>
+                                    </li>
+                                    <li class="waves-effect waves-light menu-upload toUpperCase">
+                                        <p:commandLink oncomplete="PF('sugerirOp').show()" update="sugerirOp" 
+                                                       action="#{oportunidadController.sugerirOportunidades()}"
+                                                       value="#{msgs['Oportunity.Modal.Suggestion.button']}"/>
+                                    </li>
+                                </h:panelGroup >
+                            </ul>
+                        </div>
+                    </h:form>
+                    <div class="card-content">
+                        <h:form id="form" enctype="multipart/form-data" >
+                            <center><h3>#{msgs['Oportunity.Table.title']}</h3></center>
+                            <p:growl id="growlOportunities" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                            <p:dataTable id="oportunityTable" emptyMessage="#{msgs['Common.Table.noRecords']}"
+                                         var="oportunity" value="#{oportunidadController.listarOportunidades()}"
+                                         paginator="true" paginatorPosition="bottom" rows="10">
+
+                                <p:column headerText="#{msgs['Oportunity.name']}" filterMatchMode="contains"
+                                          filterBy="#{oportunity.nombre}">
+                                    <h:outputText value="#{oportunity.nombre}"/>
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Oportunity.startDate']}" filterBy="#{oportunity.fechaInicio}" filterMatchMode="contains">
+                                    <h:outputText value="#{oportunity.fechaInicio}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Oportunity.finishDate']}" filterBy="#{oportunity.fechaInicio}">
+                                    <h:outputText value="#{oportunity.fechaFin}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Oportunity.description']}" filterMatchMode="contains"
+                                          filterBy="#{oportunity.descripcion}">
+                                    <h:outputText value="#{oportunity.descripcion}"/>
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Common.Table.action']}" width="150" exportable="false" styleClass="center-title">
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink update="modalVerOportunidad, modalVerOportunidadFortaleza" styleClass="acciones-ver" 
+                                                       actionListener="#{oportunidadController.asignarOportunidadParaVerDetalle(oportunity)}" >
+                                            <i class="material-icons">visibility</i>
+                                        </p:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink oncomplete="PF('editarOportunidad').show()" update="modalO"
+                                                       action="#{oportunidadController.editarOportunidad(oportunity)}"
+                                                       rendered="#{incidenciaController.verificarRol() eq false}" 
+                                                       disabled="#{oportunidadController.verificarFecha(oportunity)}" 
+                                                       styleClass="acciones-editar">
+                                            <i class="material-icons" >mode_edit</i>
+                                        </p:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink update="oportunityTable, form:growlOportunities" styleClass="acciones-eliminar"
+                                                       action="#{oportunidadController.eliminarOportunidad(oportunity)}" 
+                                                       disabled="#{oportunidadController.verificarFecha(oportunity)}"
+                                                       rendered="#{incidenciaController.verificarRol() eq false}" >
+                                            <p:confirm/>
+                                            <i class="material-icons">delete</i>  
+                                        </p:commandLink>    
+                                    </li>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+
+                <h:form>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                        <div class="modal-content">
+                            <h5 class="center-title">#{msgs['Common.Table.deleteTitleModal']}</h5>
+                            <center> 
+                                <p>#{msgs['Common.Table.deleteMessage']}</p>
+                                <p:commandButton value="#{msgs['Common.Table.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes btn waves-effect waves-light"/>
+                                <p:commandButton value="#{msgs['Common.Table.deleteNo']}" type="button" styleClass="ui-confirmdialog-no btn waves-effect waves-light btn-warning"/>
+                            </center>
+                        </div>
+                    </p:confirmDialog>
+                </h:form>  
+
+                <p:dialog id="registro"  resizable="false"
+                          closeOnEscape="false" draggable="false" closable="false"
+                          widgetVar="registrarOportunidad" modal="true"
+                          showEffect="fade" hideEffect="fade" styleClass="modal">
+
+                    <h:form id="registerForm" styleClass="modal-content">
+                        <h5>#{msgs['Oportunity.Table.register']}</h5>
+                        <p:growl id="growlRegisterOportunities" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="nombre" required="true" requiredMessage="#{msgs['Oportunity.required.Message.name']}"
+                                             validatorMessage="#{msgs['Oportunity.Validator.name']}" maxlength="50"
+                                             value="#{oportunidadController.oportunidad.nombre}">
+                                    <f:validateLength minimum="10" maximum="50"/>
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['Oportunity.name']}"/>
+                            </div>
+                        </div>
+                        <div class="row"> 
+                            <h6>#{msgs['Oportunity.startDate']}</h6>
+                            <div class="input-field col s6">
+                                <label for="startDate" class="topOutputlabel">#{msgs['Oportunity.date']}</label>
+                                <input type="date" class="datepicker" id="startDate" onclick="$('#startDate').pickadate({selectMonths: true, selectYears: 15, format: 'yyyy-mm-dd'});" jsf:value="#{oportunidadController.fechaInicio}"/>
+                            </div>
+                            <div class="input-field col s6">
+                                <label for="input_starttime" class="topOutputlabel">#{msgs['Oportunity.time']}</label>
+                                <input id="input_starttime" class="timepicker" type="text" onclick="$('#input_starttime').clockpicker({placement: 'bottom', align: 'left', twelvehour: false});" jsf:value="#{oportunidadController.horaInicio}"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <h6>#{msgs['Oportunity.finishDate']}</h6>
+                            <div class="input-field col s6">
+                                <label for="endDate" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.date']}</label>
+                                <input type="date" class="datepicker" id="endDate" onclick="$('#endDate').pickadate({selectMonths: true, selectYears: 15, format: 'yyyy-mm-dd'});" jsf:value="#{oportunidadController.fechaFin}"/>
+                            </div>
+                            <div class="input-field col s6">
+                                <label for="input_endTime" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.time']}</label>
+                                <input id="input_endTime" class="timepicker" type="text" onclick="$('#input_endTime').clockpicker({placement: 'bottom', align: 'left', twelvehour: false});" jsf:value="#{oportunidadController.horaFin}"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12"> 
+                                <p:selectOneMenu id="tipos" required="true" requiredMessage="#{msgs['Oportunity.required.Message.type']}"
+                                                 value="#{oportunidadController.oportunidad.tipoOportunidadID}"
+                                                 converter="tipoOportunidadConverter">
+                                    <f:selectItem noSelectionOption="true" value="#{null}" itemLabel="#{msgs['Common.Modal.Select.type']}"/>
+                                    <f:selectItems var="tipo" value="#{oportunidadController.tiposDeOportunidad}"
+                                                   itemLabel="#{tipo.descripcion}" itemValue="#{tipo}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <h:panelGroup rendered="#{oportunidadController.usuario.rolesUsuario.get(0).getRolID() != 2}">
+                                <div class="col s12">
+                                    <h:outputText value="#{oportunidadController.usuario.nombre} #{oportunidadController.usuario.apellido}" 
+                                                  styleClass="outputGrande" />
+                                </div>
+                            </h:panelGroup>
+                            <div class="col s12">
+                                <p:selectCheckboxMenu label="Agentes" id="usuarios" required="true" requiredMessage="#{msgs['Oportunity.required.Tooltip.agents']}"
+                                                      value="#{oportunidadController.usuarios}" rendered="#{oportunidadController.usuario.rolesUsuario.get(0).getRolID() != 1}"
+                                                      converter="usuarioConverter" filter='true'>
+                                    <f:selectItems var="user" value="#{usuarioController.listarAgentesOportunidad()}" 
+                                                   itemLabel="#{user.apellido} #{user.nombre}" itemValue="#{user}"/>
+                                </p:selectCheckboxMenu>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:outputLabel for="descripcion" value="#{msgs['Oportunity.description']}"/>
+                                <p:inputTextarea id="descripcion" required="true" validatorMessage="#{msgs['Oportunity.Validator.description']}"
+                                                 requiredMessage="#{msgs['Oportunity.required.Message.description']}" styleClass="materialize-textarea"
+                                                 value="#{oportunidadController.oportunidad.descripcion}" autoResize="false">
+                                    <f:validateLength minimum="10"/>
+                                </p:inputTextarea>
+                            </div>
+                            <div class="col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 actionListener="#{oportunidadController.ocultarModal(1)}"
+                                                 update=":form:oportunityTable, :form:growlOportunities, registerForm:growlRegisterOportunities"/>
+                                <p:commandButton id="registerOp" styleClass="btn waves-effect waves-light " value="#{msgs['Common.Modal.register']}"
+                                                 actionListener="#{oportunidadController.ocultarModalRegistrar()}"
+                                                 update=":form:oportunityTable, :form:growlOportunities, registerForm:growlRegisterOportunities"/>        
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="modalO" resizable="false"  styleClass="modal"
+                          closeOnEscape="false" draggable="false" closable="false"
+                          widgetVar="editarOportunidad" modal="true"
+                          showEffect="fade" hideEffect="fade">
+
+                    <h:form id="f" styleClass="modal-content">
+                        <p:growl id="growlEditOportunities" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <h5>#{msgs['Oportunity.Modal.edit']}</h5>                                        
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:outputLabel for="nombre" value="#{msgs['Oportunity.name']}"/>
+                                <p:inputText id="nombre" required="true" requiredMessage="#{msgs['Oportunity.required.Message.name']}"
+                                             validatorMessage="#{msgs['Oportunity.Validator.name']}" maxlength="50"
+                                             value="#{oportunidadController.oportunidad.nombre}">
+                                    <f:validateLength minimum="10" maximum="50"/>
+                                </p:inputText>                                    
+                            </div>
+                            <div class="col s12">
+                                <h6>#{msgs['Oportunity.startDate']}</h6>
+                                <div class="input-field col s6">
+                                    <label for="fechaInicio" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.date']}</label>
+                                    <input type="date" class="datepicker" id="fechaInicio" onclick="$('#fechaInicio').pickadate({selectMonths: true, selectYears: 15, format: 'yyyy-mm-dd'});" jsf:value="#{oportunidadController.fechaInicio}"/>
+                                </div>
+                                <div class="input-field col s6">
+                                    <label for="horaInicio" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.time']}</label>
+                                    <input id="horaInicio" class="timepicker" type="text" onclick="$('#horaInicio').clockpicker({placement: 'bottom', align: 'left', twelvehour: false});" jsf:value="#{oportunidadController.horaInicio}"/>
+                                </div>
+                            </div>
+                            <div class="col s12">
+                                <h6>#{msgs['Oportunity.finishDate']}</h6>
+                                <div class="input-field col s6">
+                                    <label for="fechaFin" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.date']}</label>
+                                    <input type="date" class="datepicker" id="fechaFin" onclick="$('#fechaFin').pickadate({selectMonths: true, selectYears: 15, format: 'yyyy-mm-dd'});" jsf:value="#{oportunidadController.fechaFin}"/>
+                                </div>
+                                <div class="input-field col s6">
+                                    <label for="horaFin" style="transform: translateY(-140%) !important;">#{msgs['Oportunity.time']}</label>
+                                    <input id="horaFin" class="timepicker" type="text" onclick="$('#horaFin').clockpicker({placement: 'bottom', align: 'left', twelvehour: false});" jsf:value="#{oportunidadController.horaFin}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <p:selectOneMenu id="tipos" required="true" requiredMessage="#{msgs['Oportunity.required.Message.type']}"
+                                                 value="#{oportunidadController.oportunidad.tipoOportunidadID}"
+                                                 converter="tipoOportunidadConverter">
+                                    <f:selectItems var="tipo" value="#{oportunidadController.tiposDeOportunidad}"
+                                                   itemLabel="#{tipo.descripcion}" itemValue="#{tipo}"/>
+                                </p:selectOneMenu> 
+                            </div>
+                            <div class="col s12">
+                                <p:selectCheckboxMenu label="Agentes" id="usuarios" required="true" requiredMessage="#{msgs['Oportunity.required.Message.agents']}"
+                                                      value="#{oportunidadController.usuarios}" filter='true'
+                                                      converter="usuarioConverter">
+                                    <f:selectItems var="user" value="#{usuarioController.listarAgentesOportunidad()}"
+                                                   itemLabel="#{user.apellido} #{user.nombre}" itemValue="#{user}"/>
+                                </p:selectCheckboxMenu>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:outputLabel for="descripcion" value="#{msgs['Oportunity.description']}" styleClass="topOutputlabel"/>
+                                <p:inputTextarea id="descripcion" validatorMessage="#{msgs['Oportunity.Validator.description']}" styleClass="materialize-textarea "
+                                                 required="true" requiredMessage="#{msgs['Oportunity.required.Message.description']}"
+                                                 value="#{oportunidadController.oportunidad.descripcion}" autoResize="false">
+                                    <f:validateLength minimum="10"/>
+                                </p:inputTextarea>
+                            </div>
+                            <div class="col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 actionListener="#{oportunidadController.ocultarModal(2)}"
+                                                 update=":form:oportunityTable, :form:growlOportunities, growlEditOportunities"/>
+                                <p:commandButton id="editOp" value="#{msgs['Common.Modal.save']}" styleClass="btn waves-effect waves-light "
+                                                 actionListener="#{oportunidadController.ocultarModalEditar()}" 
+                                                 update=":form:oportunityTable, :form:growlOportunities, growlEditOportunities"/>        
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="modalVerOportunidadFortaleza"  modal="true"
+                          widgetVar="verOportunidadFortaleza" draggable="false"
+                          showEffect="fade" hideEffect="fade" resizable="false"
+                          styleClass="modal" closable="false" >
+
+                    <h:form id="formViewOportunity" styleClass="modal-content" acceptcharset="ISO-8859-1"> 
+                        <h5 class="center-title">#{msgs['Oportunity.Modal.Detail']}</h5>                        
+                        <p:outputPanel>
+                            <p:panelGrid columns="2">
+
+                                <h:outputText value="#{msgs['Oportunity.name']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.nombre}"/>
+
+                                <h:outputText value="#{msgs['Oportunity.startDate']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.fechaInicio}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                </h:outputText>
+
+                                <h:outputText value="#{msgs['Oportunity.finishDate']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.fechaFin}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                </h:outputText>
+
+                                <h:outputText value="#{msgs['Oportunity.description']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.descripcion}"/>
+
+
+                            </p:panelGrid>
+                            <h:form id="verFormStrength" acceptcharset="ISO-8859-1">
+                                <p:growl id="growlEdit" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+
+                                <!--Este botón solo se muestra cuando la oportunidad es una fortaleza de conocimiento-->
+                                <div class="row">
+                                    <div class="input-field col s12">
+                                        <center>
+                                            <p:commandButton id="fortaleza" styleClass="btn waves-effect waves-light btn-modifyAccount"
+                                                             value="#{msgs['Strength.Table.register']}" update="modalRegisterStrengthOp" 
+                                                             oncomplete="PF('registrarFortalezaOp').show()" 
+                                                             actionListener="#{fortalezaController.asignarOportunidadDeArendizaje(oportunidadController.oportunidad)}"/>
+                                        </center>
+                                    </div>
+                                    <div class="input-field col s12">
+                                        <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                         actionListener="#{oportunidadController.ocultarModal(5)}" disabled="#{oportunidadController.banderaModalFortaleza eq false}"
+                                                         update=":form:oportunityTable, :form:growlOportunities, growlEdit"/>
+                                        <p:commandButton value="#{msgs['Oportunity.Modal.Detail.send']}" ajax="false" styleClass="btn waves-effect waves-light" actionListener="#{oportunidadController.enviarOportunidadConFortaleza()}"
+                                                         rendered="#{incidenciaController.verificarRol() eq true}"
+                                                         update=":form:oportunityTable, :form:growlOportunities, growlEdit"/>
+                                    </div>
+                                </div>
+
+                            </h:form>
+                        </p:outputPanel>
+                    </h:form>
+                </p:dialog> 
+
+                <p:dialog id="modalVerOportunidad" modal="true" 
+                          widgetVar="verOportunidad" draggable="false"
+                          showEffect="fade" hideEffect="fade" resizable="false"
+                          styleClass="modal" closable="false" >
+
+                    <div styleClass="modal-content" id="modalAll" >
+                        <h5 class="center-title">#{msgs['Oportunity.Modal.Detail']}</h5>
+                        <p:outputPanel>
+                            <p:panelGrid columns="2">
+
+                                <h:outputText value="#{msgs['Oportunity.name']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.nombre}"/>
+
+                                <h:outputText value="#{msgs['Oportunity.startDate']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.fechaInicio}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                </h:outputText>
+
+                                <h:outputText value="#{msgs['Oportunity.finishDate']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.fechaFin}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                </h:outputText>
+
+                                <h:outputText value="#{msgs['Oportunity.description']}"/>
+                                <h:outputText value="#{oportunidadController.oportunidad.descripcion}"/>
+
+                            </p:panelGrid>
+                            <h:form id="verForm" enctype="multipart/form-data" acceptcharset="ISO-8859-1">
+                                <p:growl id="growlEdit" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+
+                                <h:panelGroup  rendered="#{incidenciaController.verificarRol() eq true}">                                    
+                                    <div class="row">                                      
+                                        <div class="input-field col s12">
+                                            <p:inputTextarea id="enviar" value="#{oportunidadController.oportunidadUsuario.descripcion}" 
+                                                             cols="10" rows="3" required="true" styleClass="materialize-textarea" autoResize="false" />
+                                            <p:outputLabel for="enviar" value="#{msgs['Oportunity.description']}" />
+
+                                        </div>
+                                        <div class="file-field input-field col s12">
+                                            <div class="btn">
+                                                <i class="material-icons">attach_file</i>
+                                                <p:fileUpload id="archivo" mode="simple" 
+                                                              value="#{oportunidadController.file}"/>
+                                            </div>
+                                            <div class="file-path-wrapper">
+                                                <input class="file-path validate" type="text" placeholder="#{msgs['Common.Table.attachement']}"></input>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="row">
+                                    <div class="input-field col s12">
+                                        <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                         actionListener="#{oportunidadController.ocultarModal(3)}" id="cerrar"
+                                                         update=":form:oportunityTable, :form:growlOportunities, growlEdit"/>
+
+                                        <p:commandButton value="#{msgs['Oportunity.Modal.Detail.send']}" ajax="false" styleClass="btn waves-effect waves-light"
+                                                         actionListener="#{oportunidadController.ocultarModalDetail(1)}"
+                                                         rendered="#{incidenciaController.verificarRol() eq true}"
+                                                         update=":form:oportunityTable, :form:growlOportunities, growlEdit"/>
+                                    </div>
+                                </div>
+                            </h:form>
+                        </p:outputPanel>
+                    </div>
+                </p:dialog> 
+
+                <p:dialog id="sugerirOp" widgetVar="sugerirOp" modal="true"
+                          showEffect="fade" hideEffect="fade" resizable="false"
+                          styleClass="modal" closable="true" >
+                    <h:form styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Oportunity.Modal.Suggestion']}</h5>
+                        <div class="container">
+                            <p:dataTable value="#{oportunidadController.retornarIncidenciasOp()}" var="oo"
+                                         paginator="true" rows="5" paginatorPosition="bottom" emptyMessage="#{msgs['Common.Table.noRecords']}" > 
+                                <p:column headerText="#{msgs['Oportunity.Table.Grade.agent']}">
+                                    <h:outputText value="#{oo.usuarioID.nombre} #{oo.usuarioID.apellido}"/>
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Incident.category']}">
+                                    <h:outputText value="#{oo.categoriaID.descripcion}"/>
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Common.Table.action']}" styleClass="center-title">
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink action="#{oportunidadController.inicializarUsuarios(oo)}" update="registro"
+                                                       styleClass="btn-primary"  disabled="false" title="nueva oporunidad">
+                                            <i class="material-icons">add</i>
+                                        </p:commandLink>                                         
+                                    </li>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:commandButton  oncomplete="PF('sugerirOp').hide()" update="registro" value="#{msgs['Common.Modal.close']}"
+                                                  styleClass="btn waves-effect waves-light btn-warning btn-close"  disabled="false"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+
+
+                <p:dialog id="modalRegisterStrengthOp" resizable="false" styleClass="modal"
+                          draggable="false" closable="false"
+                          widgetVar="registrarFortalezaOp" modal="true"
+                          showEffect="fade" hideEffect="fade">
+
+                    <h:form id="strengthRegisterForm" enctype="multipart/form-data" acceptcharset="ISO-8859-1" styleClass="modal-content">   
+                        <h5 class="center-title">#{msgs['Strength.Table.register']}</h5> 
+
+                        <p:growl id="growlRegisterFortaleza" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+
+                        <div class="row">
+                            <div class="col s12">
+                                <p:outputLabel for="categoria" value="#{msgs['Strength.category']}"/>
+                                <p:selectOneMenu id="categoria" value="#{oportunidadController.fortalezaDeConocimiento.categoriaID}"
+                                                 converter="categoriaConverter"  filter="true" styleClass="input" 
+                                                 required="true" requiredMessage="#{msgs['Strength.required.Message.category']}">
+
+                                    <f:selectItem noSelectionOption="true" value="#{null}" itemLabel="#{msgs['Common.Modal.Select.category']}"/>
+                                    <f:selectItems var="cate" value="#{fortalezaController.categorias}"
+                                                   itemLabel="#{cate.descripcion}" itemValue="#{cate}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputText id="nombre" required="true" requiredMessage="#{msgs['Strength.required.Message.name']}"
+                                             validatorMessage="#{msgs['Strength.Validator.name']}" maxlength="70" 
+                                             value="#{oportunidadController.fortalezaDeConocimiento.nombre}" styleClass="input"
+                                             pt:minlength="10" pt:maxlength="70" pt:required="true">
+                                    <f:validateLength minimum="10" maximum="70"/>
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['Strength.name']}"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="descripcion" required="true" requiredMessage="#{msgs['Strength.required.Message.description']}"
+                                                 validatorMessage="#{msgs['Strength.Validator.description']}" pt:min="10"
+                                                 rows="5" autoResize="false" styleClass="materialize-textarea" pt:required="true"
+                                                 value="#{oportunidadController.fortalezaDeConocimiento.descripcion}">
+                                    <f:validateLength minimum="15"/>
+                                </p:inputTextarea>
+                                <p:outputLabel for="descripcion" value="#{msgs['Strength.description']}"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="file-field input-field col s12">
+                                <div class="btn">
+                                    <i class="material-icons">attach_file</i>
+                                    <p:fileUpload id="archivo" mode="simple" value="#{oportunidadController.file}"/>
+                                </div>
+                                <div class="file-path-wrapper">
+                                    <input class="file-path validate" type="text" placeholder="#{msgs['Common.Table.attachement']}"></input>
+                                </div>
+                            </div>
+                            <div class="input-field col s12">
+
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 actionListener="#{fortalezaController.ocultarModal(4)}"/>
+
+                                <p:commandButton id="editSFortaleza" value="#{msgs['Strength.Modal.register']}" styleClass="btn waves-effect waves-light "
+                                                 actionListener="#{oportunidadController.cerrarModalFortaleza(1)}"
+                                                 update="growlRegisterFortaleza, :verForm" ajax="false" />
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

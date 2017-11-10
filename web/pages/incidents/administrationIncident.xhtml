@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+
+            <ui:define name="content">
+
+                <div class="container">
+                    <h:form id="formulario">
+                        <h3 class="center-title">#{msgs['Incident.Table.categories']}</h3>
+                        <p:growl id="growlCategories" showSummary="false" showDetail="true" sticky="false" life="3000"/> 
+
+                        <div class="fixed-action-btn toolbar">
+                            <a class="btn-floating btn-large red">
+                                <i class="large material-icons">menu</i>
+                            </a>
+                            <ul>
+                                <li class="waves-effect waves-light menu-register toUpperCase">
+                                    <p:commandLink oncomplete="PF('categoriaCrear').show()"
+                                                   value="#{msgs['Category.Modal.register']}">
+                                    </p:commandLink>
+                                </li>
+                                <li class="waves-effect waves-light menu-upload toUpperCase">
+                                    <p:commandLink oncomplete="PF('errorFrecuenteCrear').show()" 
+                                                   value="#{msgs['Error.Modal.register']}">
+                                    </p:commandLink>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-content">
+                            <p:dataTable id="tableCategories" value="#{categoriaController.listarCategorias()}" var="category"
+                                         emptyMessage="#{msgs['Common.Table.noRecords']}"  style="margin-bottom: 20px;"
+                                         paginator="true" paginatorPosition="bottom" rows="10">
+
+                                <p:column headerText="#{msgs['Permission.description']}">
+                                    <h:outputText value="#{category.descripcion}"/>                            
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Common.Table.action']}" styleClass="center-title">
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink update="editarCategoria" styleClass="acciones-editar"
+                                                       oncomplete="PF('categoriaEditar').show()" action="#{categoriaController.editarCategoria(category)}">
+                                            <i class="material-icons">mode_edit</i>
+                                        </p:commandLink>
+
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink id="eliminar" update="tableCategories, formulario:growlCategories"
+                                                       action="#{categoriaController.eliminarCategoria(category)}" styleClass="acciones-eliminar">
+                                            <p:confirm />
+                                            <i class="material-icons">delete</i>
+                                        </p:commandLink>  
+                                    </li>
+
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </h:form>
+                </div>
+
+                <h:form>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                        <div class="modal-content">
+                            <h5 class="center-title">#{msgs['Common.Table.deleteTitleModal']}</h5>
+                            <center> 
+                                <p>#{msgs['Common.Table.deleteMessage']}</p>
+                                <p:commandButton value="#{msgs['Common.Table.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes btn waves-effect waves-light"/>
+                                <p:commandButton value="#{msgs['Common.Table.deleteNo']}" type="button" styleClass="ui-confirmdialog-no btn waves-effect waves-light btn-warning"/>
+                            </center>
+                        </div>
+                    </p:confirmDialog>
+                </h:form>  
+
+                <div class="container">
+                    <h:form id="errorForm">
+                        <h3>#{msgs['Incident.Table.errors']}</h3>
+                        <p:growl id="growlErrors" showSummary="false" showDetail="true" sticky="false" life="3000"/> 
+
+                        <div class="card-content">
+                            <p:dataTable id="tableErrors" value="#{errorController.listarErrores()}" var="error"
+                                         emptyMessage="#{msgs['Common.Table.noRecords']}"  style="margin-bottom: 20px;"
+                                         paginator="true" paginatorPosition="bottom" rows="10">
+
+                                <p:column headerText="#{msgs['Permission.description']}">
+                                    <h:outputText value="#{error.descripcion}"/>                            
+                                </p:column>
+
+                                <p:column headerText="#{msgs['Common.Table.action']}" styleClass="center-title">
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink update="errorFrecuenteModalEdit" styleClass="acciones-editar"
+                                                       oncomplete="PF('errorFrecuenteEditar').show()" action="#{errorController.editarError(error)}">
+                                            <i class="material-icons">mode_edit</i>
+                                        </p:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <p:commandLink update="tableErrors, errorForm:growlErrors" styleClass="acciones-eliminar"
+                                                       action="#{errorController.eliminarError(error)}" >
+
+                                            <p:confirm header="#{msgs['Common.Table.deleteTitleModal']}" message="#{msgs['Common.Table.deleteMessage']}"
+                                                       icon="ui-icon-alert"/>
+                                            <i class="material-icons">delete</i>
+                                        </p:commandLink>                      
+                                    </li>
+
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </h:form>
+                </div>
+
+                <p:dialog widgetVar="categoriaCrear" modal="true"  id="crearCategoria"
+                          draggable="false" showEffect="fade" resizable="false" 
+                          styleClass="modal">
+                    <h:form id="crearCategoriaForm" styleClass="modal-content">
+                        <p:growl id="crearCategoriaGrowl" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <h5>#{msgs['Category.Modal.register']}</h5>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="description" value="#{categoriaController.categoria.descripcion}"/>
+                                <p:outputLabel for="description" value="#{msgs['Category.description']}"/>        
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning" immediate="true"
+                                                 update=":formulario:tableCategories, crearCategoriaGrowl" onclick="PF('categoriaCrear').hide();"/>
+                                <p:commandButton id="crearCategoriaBtn" value="#{msgs['Common.Modal.register']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{categoriaController.registarCategoria()}" update="crearCategoriaGrowl"/>
+                            </div>
+                        </div>  
+                    </h:form>
+                </p:dialog>   
+
+                <p:dialog id="editarCategoria" styleClass="modal" widgetVar="categoriaEditar" modal="true"  
+                          draggable="false" showEffect="fade" resizable="false" >
+                    <h:form id="editarCategoriaForm" styleClass="modal-content">    
+                        <h5>#{msgs['Category.Modal.edit']}</h5>
+                        <p:growl id="modificarCategoriaGrowl" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="description" value="#{categoriaController.categoria.descripcion}"/>
+                                <p:outputLabel for="description" value="#{msgs['Category.description']}"/>        
+                            </div>
+                        </div>
+                        <div class="input-field col s12">
+                            <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning"  immediate="true"
+                                             update="modificarCategoriaGrowl, :formulario:tableCategories" onclick="PF('categoriaEditar').hide();"/>
+                            <p:commandButton id="crearCategoriaBtn" value="#{msgs['Common.Modal.save']}" styleClass="btn waves-effect waves-light"
+                                             actionListener="#{categoriaController.editarCategoria()}" update="modificarCategoriaGrowl, :formulario:tableCategories"/>
+                        </div>
+                    </h:form>
+                </p:dialog> 
+
+                <p:dialog widgetVar="errorFrecuenteCrear" modal="true"  id="errorFrecuenteModal"
+                          draggable="false" showEffect="fade" resizable="false" 
+                          styleClass="modal">
+                    <h:form id="crearErrorFrecuente" styleClass="modal-content"> 
+                        <h5>#{msgs['Error.Modal.register']}</h5>
+                        <p:growl id="crearErrorFrecuenteGrowl" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="description" value="#{errorController.errorFrecuente.descripcion}"/>
+                                <p:outputLabel for="description" value="#{msgs['Error.description']}"/>
+
+                            </div>
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning" immediate="true"
+                                                 update="crearErrorFrecuenteGrowl" onclick="PF('errorFrecuenteCrear').hide();"/>
+                                <p:commandButton id="crearErrorBtn" value="#{msgs['Common.Modal.register']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{errorController.registrarErrorFrecuente()}" update="crearErrorFrecuenteGrowl"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>  
+
+                <p:dialog widgetVar="errorFrecuenteEditar" modal="true"  id="errorFrecuenteModalEdit"
+                          draggable="false" showEffect="fade" resizable="false" styleClass="modal">
+                    <h:form id="editarErrorFrecuente" styleClass="modal-content">
+                        <p:growl id="editarErrorFrecuenteGrowl" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+                        <h5>#{msgs['Error.Modal.edit']}</h5>
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="description" value="#{errorController.errorFrecuente.descripcion}"/>
+                                <p:outputLabel for="description" value="#{msgs['Error.description']}"/>
+
+                            </div>
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning"  immediate="true"
+                                                 update="editarErrorFrecuenteGrowl" onclick="PF('errorFrecuenteEditar').hide();"/>
+                                <p:commandButton id="crearErrorBtn" value="#{msgs['Common.Modal.save']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{errorController.editarError()}" update="editarErrorFrecuenteGrowl, :errorForm:tableErrors"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>  
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

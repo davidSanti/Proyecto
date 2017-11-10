@@ -1,0 +1,410 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    <header>
+        <h:outputStylesheet library="css" name="style.css"/>
+    </header>
+    <body>        
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+
+            <ui:define name="content">
+
+                <f:view>   
+                    <div class="container">
+                        <h:form id="form">
+                            <h3 class="center-title">#{msgs['Incident.Table.title']}</h3>
+                            <p:growl id="growlIncidents" showSummary="false" showDetail="true" sticky="false" life="3000"/> 
+
+                            <div class="fixed-action-btn toolbar">
+                                <a class="btn-floating btn-large red">
+                                    <i class="large material-icons">menu</i>
+                                </a>
+                                <ul>
+                                    <li class="waves-effect waves-light menu-exportPdf">
+                                        <h:commandLink>
+                                            <p:graphicImage url="/resources/img/pdf.png" width="55" height="58"/>
+                                            <p:dataExporter type="pdf" target="incidentTable" fileName="#{msgs['Strength.NameStrength']}"/>
+                                        </h:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light menu-exportXls">
+                                        <h:commandLink>
+                                            <p:graphicImage url="/resources/img/excel.png" width="40" height="40" style="margin-top: 9px;"/>
+                                            <p:dataExporter type="xls" target="incidentTable" fileName="#{msgs['Strength.NameStrength']}"/>
+                                        </h:commandLink>
+                                    </li>
+
+                                    <h:panelGroup rendered="#{incidenciaController.verificarRol() eq false}" >
+                                        <li class="waves-effect waves-light menu-register toUpperCase">
+                                            <p:commandLink value="#{msgs['Incident.Table.register']}" 
+                                                           oncomplete="PF('registrarIncidencia').show()" update="register"/>
+                                        </li>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{usuarioController.verificarRol() eq true}"  >
+                                        <li class="waves-effect waves-light menu-upload toUpperCase">
+                                            <p:commandLink oncomplete="PF('masivoIncidencias').show()" 
+                                                           value="#{msgs['Incident.Table.upload']}"/>
+                                        </li>
+                                    </h:panelGroup>
+                                </ul>
+                            </div>
+
+                            <div class="card-content">
+                                <p:dataTable id="incidentTable" emptyMessage="#{msgs['Common.Table.noRecords']}"
+                                             var="pp" value="#{incidenciaController.listarIncidencia()}"
+                                             paginator="true" paginatorPosition="bottom" rows="6">
+
+                                    <p:column headerText="#{msgs['Incident.casesNumber']}" filterBy="#{pp.numeroDeCaso}">
+                                        <h:outputText value="#{pp.numeroDeCaso}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Incident.agent']}" filterBy="#{pp.usuarioID.apellido} #{pp.usuarioID.nombre}"
+                                              rendered="#{incidenciaController.verificarRol() eq false}" filterMatchMode="contains">
+                                        <h:outputText value="#{pp.usuarioID.apellido} #{pp.usuarioID.nombre}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Incident.category']}" filterBy="#{pp.categoriaID.descripcion}" filterMatchMode="contains">
+                                        <h:outputText value="#{pp.categoriaID.descripcion}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Incident.description']}" filterBy="#{pp.descripcion}" filterMatchMode="contains">
+                                        <h:outputText value="#{pp.descripcion}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Incident.Table.errors']}" exportable="false">
+                                        <p:dataList value="#{pp.erroresIncidencia}"
+                                                    type="definition"  var="err"
+                                                    emptyMessage="#{msgs['Incident.Table.noErrorsRecords']}">
+
+                                            <h:outputText value="#{err.descripcion}"/>
+                                        </p:dataList>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Common.Table.action']}" width="150" exportable="false" styleClass="center-title">
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink oncomplete="PF('verIncidencia').show()" update="modalVerIncidencia"
+                                                           actionListener="#{incidenciaController.editarIncidencia(pp)}" styleClass="acciones-ver" >
+                                                <i class="material-icons">visibility</i>
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink oncomplete="PF('editarIncidencia').show()" update="modalIn"
+                                                           actionListener="#{incidenciaController.editarIncidencia(pp)}"
+                                                           disabled="#{incidenciaController.verificarRol() eq true}" styleClass="acciones-editar">
+                                                <i class="material-icons" >mode_edit</i>
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink  update="incidentTable, form:growlIncidents"
+                                                            action="#{incidenciaController.eliminarIncidencia(pp)}"
+                                                            disabled="#{incidenciaController.verificarRol() eq true}" styleClass="acciones-eliminar">
+
+                                                <p:confirm/>
+                                                <i class="material-icons">delete</i>  
+                                            </p:commandLink>
+                                        </li> 
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </h:form>
+                    </div>
+                </f:view>
+                
+                <h:form>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                        <div class="modal-content">
+                            <h5 class="center-title">#{msgs['Common.Table.deleteTitleModal']}</h5>
+                            <center> 
+                                <p>#{msgs['Common.Table.deleteMessage']}</p>
+                                <p:commandButton value="#{msgs['Common.Table.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes btn waves-effect waves-light"/>
+                                <p:commandButton value="#{msgs['Common.Table.deleteNo']}" type="button" styleClass="ui-confirmdialog-no btn waves-effect waves-light btn-warning"/>
+                            </center>
+                        </div>
+                    </p:confirmDialog>
+                </h:form>
+
+                <p:dialog id="modalMasivo" resizable="false" closeOnEscape="true" 
+                          draggable="false" closable="true" widgetVar="masivoIncidencias" 
+                          modal="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                    <h:form enctype="multipart/form-data" styleClass="modal-content">  
+                        <h5 class="center-title">#{msgs['Incident.Table.upload']}</h5>
+                        <div class="row">
+                            <div class="file-field input-field col s12">
+                                <div class="btn">
+                                    <i class="material-icons">attach_file</i>
+                                    <p:fileUpload value="#{exportController.file}" mode="simple"
+                                                  required="true" pt:required="true"/>
+                                </div>
+                                <div class="file-path-wrapper">
+                                    <input class="file-path validate" type="text" placeholder="#{msgs['Common.Table.attachement']}"></input>
+                                </div>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true"
+                                                 oncomplete="PF('masivoIncidencias').hide()"
+                                                 styleClass="btn waves-effect waves-light btn-warning"/>
+
+                                <p:commandButton value="#{msgs['Common.Modal.send.button']}" ajax="false" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{exportController.cargaMasivaIncidencias()}"
+                                                 update=":form:incidentTable, :form:growlIncidents"/>
+                            </div>
+
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="register" resizable="false" styleClass="modal"
+                          closeOnEscape="true" draggable="false"
+                          widgetVar="registrarIncidencia" modal="true"
+                          showEffect="fade" hideEffect="fade" >
+
+                    <h:form id="registroIncidencia" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Incident.Table.register']}</h5>
+                        <p:growl id="growlRegisterIncident" showSummary="false" showDetail="true" sticky="false" life="1500"/> 
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputMask id="numCaso" mask="999999"  size="23"
+                                             required="true" requiredMessage="#{msgs['Incident.required.Message.CaseNumber']}"
+                                             value="#{incidenciaController.incidencia.numeroDeCaso}">
+                                </p:inputMask>
+                                <p:outputLabel for="numCaso" value="#{msgs['Incident.casesNumber']}"/> 
+                            </div>
+                            <div class="col s12">
+                                <p:selectOneMenu id="agente" value="#{incidenciaController.incidencia.usuarioID}" 
+                                                 converter="usuarioConverter" required="true" filter="true" 
+                                                 requiredMessage="#{msgs['Incident.required.Message.Agent']}">
+
+                                    <f:selectItem noSelectionOption="true" value="#{null}" itemLabel="#{msgs['Common.Modal.Select.agent']}"/>
+                                    <f:selectItems value="#{incidenciaController.usuarios}" var="item"
+                                                   itemLabel="#{item.nombre} #{item.apellido}" itemValue="#{item}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col s1">
+                                <li class="waves-effect waves-light">
+                                    <p:commandLink onclick="PF('categoriaCrear').show()"  immediate="true" update="crearCategoriaForm"
+                                                   rendered="#{incidenciaController.verificarRol() eq false}">
+                                        <i class="material-icons ">add</i>                                
+                                    </p:commandLink>
+                                </li>  
+                            </div>
+                            <div class="col s11">
+                                <p:selectOneMenu id="categoria" value="#{incidenciaController.incidencia.categoriaID}"
+                                                 converter="categoriaConverter" required="true" filter="true" styleClass="peque"
+                                                 requiredMessage="#{msgs['Incident.required.Message.Category']}"> 
+                                    <f:selectItem noSelectionOption="true" value="#{null}" itemLabel="#{msgs['Common.Modal.Select.category']}"/>
+                                    <f:selectItems value="#{incidenciaController.categorias}" var="ser"
+                                                   itemLabel="#{ser.descripcion}" itemValue="#{ser}"/>
+                                </p:selectOneMenu>                                
+                            </div>
+                            <div class="col s1">
+                                <li class="waves-effect waves-light">                                
+                                    <p:commandLink  onclick="PF('errorFrecuenteCrear').show();" immediate="true"
+                                                    rendered="#{incidenciaController.verificarRol() eq false}" update="crearErrorFrecuente">
+                                        <i class="material-icons ">add</i>
+                                    </p:commandLink>
+                                </li>
+                            </div>
+                            <div class="col s11">
+                                <p:selectCheckboxMenu label="#{msgs['Incident.Table.errors']}" value="#{incidenciaController.incidencia.erroresIncidencia}"
+                                                      id="error" converter="errorConverter" filter="true" 
+                                                      required="true" requiredMessage="#{msgs['Incident.required.Message.UsualError']}">
+                                    <f:selectItems value="#{incidenciaController.errores}" var="err"
+                                                   itemLabel="#{err.descripcion}" itemValue="#{err}"/>
+                                </p:selectCheckboxMenu>                                
+                            </div>
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="descripcion" required="true" validatorMessage="#{msgs['Incident.Validator.description']}"
+                                                 requiredMessage="#{msgs['Incident.required.Message.Description']}" cols="25" rows="5"
+                                                 value="#{incidenciaController.incidencia.descripcion}" autoResize="false" 
+                                                 styleClass="materialize-textarea">
+                                    <f:validateLength minimum="10"/>
+                                </p:inputTextarea>
+                                <p:outputLabel for="descripcion" value="#{msgs['Incident.description']}"/> 
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-ligth btn-warning" 
+                                                 actionListener="#{incidenciaController.ocultarModal(1)}" immediate="true"                                          
+                                                 update=":form:growlIncidents, :form:incidentTable, growlRegisterIncident"/>
+
+                                <p:commandButton id="bb" value="#{msgs['Common.Modal.register']}"  styleClass="btn waves-effect waves-ligth" 
+                                                 actionListener="#{incidenciaController.ocultarModalRegistrar()}"
+                                                 update=":form:growlIncidents, :form:incidentTable, growlRegisterIncident"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog> 
+
+                <p:dialog id="modalIn" resizable="false" styleClass="modal"
+                          closeOnEscape="false" draggable="false" closable="false"
+                          widgetVar="editarIncidencia" modal="true"
+                          showEffect="fade" hideEffect="fade" >
+                    <h:form id="f" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Incident.Modal.editTitle']}</h5>
+                        <p:growl id="growlEditIncident" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row">
+
+                            <div class="input-field col s12">
+                                <p:inputMask id="numCaso" mask="999999" 
+                                             required="true" requiredMessage="#{msgs['Incident.required.Message.CaseNumber']}"
+                                             value="#{incidenciaController.incidencia.numeroDeCaso}">
+                                </p:inputMask>
+                                <p:outputLabel for="numCaso" value="#{msgs['Incident.casesNumber']}"/>
+                            </div>
+                            <div class="col s12">
+                                <p:selectOneMenu id="agente" value="#{incidenciaController.incidencia.usuarioID}" 
+                                                 converter="usuarioConverter" required="true" filter="true"
+                                                 requiredMessage="#{msgs['Incident.required.Message.Agent']}">
+                                    <f:selectItems value="#{incidenciaController.usuarios}" var="item"
+                                                   itemLabel="#{item.nombre} #{item.apellido}" itemValue="#{item}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+
+                            <div class="col s12">
+                                <p:selectOneMenu id="categoria" value="#{incidenciaController.incidencia.categoriaID}"
+                                                 converter="categoriaConverter" required="true" filter="true"
+                                                 requiredMessage="#{msgs['Incident.required.Message.Category']}"> 
+                                    <f:selectItems value="#{incidenciaController.categorias}" var="ser"
+                                                   itemLabel="#{ser.descripcion}" itemValue="#{ser}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col s12">
+                                <p:selectCheckboxMenu label="#{msgs['Incident.Table.errors']}" value="#{incidenciaController.incidencia.erroresIncidencia}"
+                                                      id="error" converter="errorConverter" filter="true" 
+                                                      required="true" requiredMessage="#{msgs['Incident.required.Message.UsualError']}">
+                                    <f:selectItems value="#{incidenciaController.errores}" var="err"
+                                                   itemLabel="#{err.descripcion}" itemValue="#{err}"/>
+                                </p:selectCheckboxMenu>
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="descripcion" required="true" validatorMessage="#{msgs['Incident.Validator.description']}"
+                                                 requiredMessage="#{msgs['Incident.required.Message.Description']}" autoResize="false"
+                                                 value="#{incidenciaController.incidencia.descripcion}" styleClass="materialize-textarea"
+                                                 cols="25" rows="5">
+                                    <f:validateLength minimum="10"/>
+                                </p:inputTextarea>
+                                <p:outputLabel for="descripcion" value="Descripción" styleClass="topOutputlabel"/> 
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}"  immediate="true" styleClass="btn waves-effect waves-ligth btn-warning" 
+                                                 actionListener="#{incidenciaController.ocultarModal(2)}"
+                                                 update=":form:growlIncidents, :form:incidentTable, growlEditIncident"/>
+
+                                <p:commandButton id="bb" value="#{msgs['Common.Modal.save']}" styleClass="btn waves-effect waves-ligth"
+                                                 actionListener="#{incidenciaController.ocultarModalEditar()}"                                                 
+                                                 update=":form:growlIncidents, :form:incidentTable, growlEditIncident"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog> 
+
+                <p:dialog id="modalVerIncidencia" styleClass="modal"
+                          modal="true" widgetVar="verIncidencia" draggable="false" closable="false"
+                          showEffect="fade" hideEffect="fade" resizable="false">
+                    <h:form id="botonViewIncident" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Incident.Modal.detailTitle']}</h5>
+                        <p:outputPanel>
+                            <p:panelGrid columns="2" id="viewPanel">
+
+                                <h:outputText value="#{msgs['Incident.casesNumber']}"/>
+                                <h:outputText value="#{incidenciaController.incidencia.numeroDeCaso}"/>
+
+                                <h:outputText value="#{msgs['Incident.agent']}"
+                                              rendered="#{incidenciaController.verificarRol() eq false}"/>
+                                <h:outputText value="#{incidenciaController.incidencia.usuarioID.nombre}
+                                              #{incidenciaController.incidencia.usuarioID.apellido}"
+                                              rendered="#{incidenciaController.verificarRol() eq false}"/>
+
+                                <h:outputText value="#{msgs['Incident.category']}"/>
+                                <h:outputText value="#{incidenciaController.incidencia.categoriaID.descripcion}"/> 
+
+                                <h:outputText value="#{msgs['Incident.description']}"/>
+                                <h:outputText value="#{incidenciaController.incidencia.descripcion}"/>
+
+                                <h:outputText value="#{msgs['Incident.Table.errors']}"/>
+                                <p:dataList value="#{incidenciaController.incidencia.erroresIncidencia}"
+                                            type="definition"  var="err"
+                                            emptyMessage="#{msgs['Incident.Table.noErrorsRecords']}">
+
+                                    <h:outputText value="#{err.descripcion}"/>
+                                </p:dataList>
+
+                            </p:panelGrid>
+                        </p:outputPanel>
+
+                        <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-ligth btn-warning btn-close" 
+                                         immediate="true" update="botonViewIncident"
+                                         actionListener="#{incidenciaController.ocultarModal(3)}"/>
+                    </h:form>
+                </p:dialog> 
+
+                <p:dialog widgetVar="categoriaCrear" modal="true" id="crearCategoria"
+                          draggable="false" showEffect="fade" resizable="false" styleClass="modal">
+
+                    <h:form id="crearCategoriaForm" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Category.Modal.register']}</h5>                            
+                        <p:growl id="crearCategoriaGrowl" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="description" value="#{categoriaController.categoria.descripcion}"/>
+                                <p:outputLabel for="description" value="#{msgs['Category.description']}"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning"  immediate="true"
+                                                 update="registroIncidencia,crearCategoriaGrowl" onclick="PF('categoriaCrear').hide();"/>
+                                <p:commandButton id="crearCategoriaBtn" value="#{msgs['Common.Modal.register']}" styleClass="btn waves-effect waves-light" 
+                                                 actionListener="#{categoriaController.registarCategoria()}" update="crearCategoriaGrowl,crearCategoriaForm, :registroIncidencia:categoria"/>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>      
+
+                <p:dialog widgetVar="errorFrecuenteCrear" modal="true"  id="errorFrecuenteModal"
+                          draggable="false" showEffect="fade" resizable="false" styleClass="modal">
+                    <h:form id="crearErrorFrecuente" styleClass="modal-content">
+                        <h5 class="center-title">#{msgs['Error.Modal.register']}</h5>    
+                        <p:growl id="crearErrorFrecuenteGrowl" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText id="description" value="#{errorController.errorFrecuente.descripcion}"/>
+                                <p:outputLabel for="description" value="#{msgs['Error.description']}"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning"  immediate="true"
+                                                 update="registroIncidencia,crearErrorFrecuenteGrowl" onclick="PF('errorFrecuenteCrear').hide();"/>
+                                <p:commandButton id="crearErrorBtn" value="#{msgs['Common.Modal.register']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{errorController.registrarErrorFrecuente()}" update="crearErrorFrecuenteGrowl,crearErrorFrecuente, :registroIncidencia:error"/>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>  
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

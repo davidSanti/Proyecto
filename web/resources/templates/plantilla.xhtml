@@ -1,0 +1,215 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <f:event type="preRenderView" listener="#{menuController.verificarSesion()}"/>
+        <f:event type="preRenderView" listener="#{menuController.verificarPermiso()}"/>
+        <title>Sigueme</title>
+        <h:outputStylesheet library="css" name="style.css"/>
+        <h:outputStylesheet library="css" name="default.css"/>
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css"></link>
+        <link rel="stylesheet" href="resources/css/style.css"></link>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
+    </h:head>
+    <h:body>
+        <p:ajaxStatus onstart="PF('cargando').show()" onsuccess="PF('cargando').hide()" />
+        <p:dialog widgetVar="cargando" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+            <p:graphicImage styleClass="" library="img" name="carga3.gif" />
+        </p:dialog>
+        <f:view locale="#{menuController.locale}">
+            <ui:insert name="top">
+                <div class="row" style="background: #164063 !important;">
+                    <div class="col s2"></div>
+                    <div class="col s6">
+                        <nav>
+                            <h:form styleClass="nav-wrapper">
+                                <p:menubar model="#{menuController.model}" styleClass="hide-on-med-and-down">
+                                </p:menubar>
+                            </h:form>
+                        </nav>
+                    </div>
+                    <div class="col s2"></div>
+                    <div class="col s2">
+                        <nav>
+                            <h:form styleClass="nav-wrapper">
+                                <p:menubar styleClass="hide-on-med-and-down">
+                                    <p:submenu   label="#{menuController.mostrarNombreUsuario()}">
+                                        <p:menuitem value="#{msgs['Template.modifyAcount']}" actionListener="#{menuController.leerDatos()}"
+                                                    oncomplete="PF('modifyAccount').show()" update="modalUser"                                           
+                                                    icon="ui-icon-pencil" iconPos="ui-icon-pencil"/>
+                                        <p:menuitem value="#{msgs['Template.signOff']}" action="#{menuController.cerrarSesion()}"
+                                                    icon="ui-icon-power" iconPos="ui-icon-power"/>
+                                    </p:submenu>
+                                    <p:submenu label="#{msgs['Menu.Languaje']}">
+                                        <c:forEach items="#{menuController.supportedLocales}" var="l">
+                                            <p:menuitem value="#{l}" actionListener="#{menuController.cambiarIdiomaF(l)}" ajax="false"                                         
+                                                        iconPos="fa fa-globe" icon="ui-icon-flag"/>
+                                        </c:forEach>
+                                    </p:submenu>    
+                                </p:menubar>
+                            </h:form>
+                        </nav>
+                    </div>
+                </div>
+                <p:dialog id="modalUser"  resizable="false" 
+                          closeOnEscape="false" draggable="false" closable="false"
+                          widgetVar="modifyAccount" modal="true"
+                          showEffect="fade" hideEffect="fade" styleClass="modal">
+                    <h:form id="modify" styleClass="modal-content">
+                        <h5>#{msgs['User.Modal.ModifyAcounttModalTitle']}</h5>
+                        <p:growl id="growlEditUser" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText   id="cedula" required="true" disabled="true" maxlength="10"
+                                               value="#{menuController.usuario.cedula}">
+                                    <f:validateLength minimum="8" maximum="10"/>
+                                </p:inputText>
+                                <p:outputLabel for="cedula" value="#{msgs['User.identification']}" styleClass="topOutputlabel"/>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:inputText   id="nombre" required="true" requiredMessage="#{msgs['User.required.Message.name']}"
+                                               validatorMessage="#{msgs['User.Validator.name']}"
+                                               value="#{menuController.usuario.nombre}" maxlength="25">
+                                    <f:validateLength minimum="3" maximum="25" />
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['User.name']}"/>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:inputText   id="apellido" required="true" requiredMessage="#{msgs['User.required.Message.lastName']}"
+                                               validatorMessage="#{msgs['User.Validator.lastName']}"
+                                               value="#{menuController.usuario.apellido}" maxlength="25">
+                                    <f:validateLength minimum="3" maximum="25" />
+                                </p:inputText>
+                                <p:outputLabel for="apellido" value="#{msgs['User.lastName']}" styleClass="topOutputlabel"/>
+                            </div>
+                        </div>
+                        <div class="row">    
+                            <div class="input-field col s12">
+                                <p:inputText   id="email" required="true" requiredMessage="#{msgs['User.required.Message.email']}"
+                                               validatorMessage="#{msgs['User.Validator.email']}"
+                                               pt:type="email" maxlength="35"
+                                               value="#{menuController.usuario.email}">
+                                    <f:validateLength minimum="15" maximum="35"/>
+                                </p:inputText>
+                                <p:outputLabel for="email" value="#{msgs['User.email']}" styleClass="topOutputlabel"/>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:password id="pass" required="true" requiredMessage="#{msgs['User.required.Message.password']}"
+                                            value="#{usuarioController.clave}" maxlength="16"
+                                            validatorMessage="#{msgs['User.Validator.confirmPassword']}">
+                                    <f:validateLength minimum="8" maximum="16" />
+                                </p:password>
+                                <p:outputLabel for="pass" value="#{msgs['User.actualPassword']}"/>
+                            </div>
+                            <div class="input-field col s12">
+                                <p:password id="password" required="#{usuarioController.banderaModifyAcount}" requiredMessage="#{msgs['User.required.Message.password']}"
+                                            weakLabel="#{msgs['User.primefaces.Password.weak']}" 
+                                            strongLabel="#{msgs['User.primefaces.Password.strong']}" 
+                                            goodLabel="#{msgs['User.primefaces.Password.good']}"
+                                            feedback="true" promptLabel="#{msgs['User.primefaces.Password.title']}"
+                                            value="#{usuarioController.nuevaClave}" maxlength="16" match="password1" 
+                                            validatorMessage="#{msgs['User.Validator.confirmPassword']}"
+                                            rendered="#{usuarioController.banderaModifyAcount eq true}">
+                                    <f:validateLength minimum="8" maximum="16" />
+                                </p:password>
+                                <p:outputLabel for="password" value="#{msgs['User.newPassword']}"  rendered="#{usuarioController.banderaModifyAcount eq true}" />
+                            </div>
+                            <div class="input-field col s12">
+                                <p:password id="password1" required="#{usuarioController.banderaModifyAcount}" requiredMessage="#{msgs['User.required.Message.password']}"
+                                            weakLabel="#{msgs['User.primefaces.Password.weak']}" 
+                                            strongLabel="#{msgs['User.primefaces.Password.strong']}" 
+                                            goodLabel="#{msgs['User.primefaces.Password.good']}"
+                                            feedback="true" promptLabel="#{msgs['User.primefaces.Password.title']}"
+                                            validatorMessage="#{msgs['User.Validator.password']}" maxlength="16"
+                                            rendered="#{usuarioController.banderaModifyAcount eq true}">
+                                    <f:validateLength minimum="8" maximum="16" />
+                                </p:password>
+                                <p:outputLabel for="password1" value="#{msgs['User.confirmPassword']}" rendered="#{usuarioController.banderaModifyAcount eq true}" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p:commandLink action="#{usuarioController.verificarBandera()}" immediate="true" styleClass="btn waves-effect waves-light btn-modifyAccount"
+                                           value="#{msgs[usuarioController.mostrarAlgo()]}" update="modify, growlEditUser " />
+                            <p:commandButton immediate="true" value="#{msgs['Common.Modal.close']}" styleClass="btn waves-effect waves-light btn-warning"
+                                             actionListener="#{usuarioController.ocultarModal(3)}" style="margin: 2px;"/> 
+                            <p:commandButton id="editUser" value="#{msgs['Common.Modal.save']}" styleClass="btn waves-effect waves-light"
+                                             actionListener="#{usuarioController.ocultarModificarCuenta(menuController.usuario)}" update="growlEditUser"/>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:insert>
+            <ui:insert name="left"></ui:insert>
+            <ui:insert name="content">
+            </ui:insert>
+            <ui:insert name="bottom">
+                <footer class="page-footer">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col l6 s12">
+                                <h5 class="white-text">Sigueme</h5>
+                                <h:form id="contactenos">
+                                    <p:growl id="contactenosgrl" showSummary="false" showDetail="true" sticky="false" life="3000"/> 
+                                    <div class="row cont">
+                                        <div class="input-field col s12">
+                                            <p:inputText   id="nombre" styleClass="letra" required="true" requiredMessage="#{msgs['User.required.Message.name']}"
+                                                           value="#{usuarioController.nombre}"
+                                                           pt:minlength="7" pt:maxlength="40" pt:required="true">
+                                                <f:validateLength minimum="70" maximum="40"/>
+                                            </p:inputText>
+                                            <p:outputLabel for="nombre" value="#{msgs['Contact.Placeholder.Type.Name']}"/>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <p:inputText   id="contacto" styleClass="letra" required="true" requiredMessage="#{msgs['User.required.Message.email']}"
+                                                           value="#{usuarioController.contacto}" pt:type="email" validatorMessage="#{msgs['User.Validator.email']}"
+                                                           pt:minlength="12" pt:maxlength="60" pt:required="true">
+                                               <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                                               <f:validateLength minimum="12" maximum="60"/>
+                                            </p:inputText>
+                                            <p:outputLabel for="contacto" value="#{msgs['Contact.Placeholder.Type.EmailContact']}"/>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <p:inputTextarea id="mensaje" styleClass="materialize-textarea letra"
+                                                             value="#{usuarioController.mensaje}" autoResize="false" 
+                                                             required="true" requiredMessage="#{msgs['Contact.Required.message']}"
+                                                             pt:minlength="10" pt:maxlength="200" pt:required="true">
+                                                <f:validateLength minimum="10" maximum="200"/>
+                                            </p:inputTextarea>
+                                            <p:outputLabel for="mensaje" value="#{msgs['Contact.Placeholder.Type.Message']}"/>
+                                        </div>
+                                        <p:commandButton id="editUser" value="#{msgs['Contact.Send.button']}" styleClass="btn waves-effect waves-light"
+                                                         update="contactenos,contactenosgrl" actionListener="#{usuarioController.contactenos()}"/>
+                                    </div>
+
+                                </h:form>
+                            </div>
+                            <div class="col l4 offset-l2 s12">
+                                <h5 class="white-text">Links</h5>
+                                <ul>
+                                    <li><a href="https://www.facebook.com/unijaveriana/" target="_blank"><i class="tiny material-icons"></i>Facebook</a></li>
+                                    <li><a href="https://twitter.com/unijaveriana?lang=es" target="_blank"><i class="tiny material-icons"></i>twitter</a></li>
+                                    <li><a class="grey-text text-lighten-3" href="#!"><i class="tiny material-icons"></i> dti-mesaservicios@javeriana.edu.co</a></li>
+                                    <li><a class="grey-text text-lighten-3" href="#!">(571) 3208320  </a></li>
+                                </ul>
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.8041736401124!2d-74.06646888523797!3d4.628998496637303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a27ccde6cfb%3A0x6dffacca7e14eed1!2sUniversidad+Javeriana%2C+Bogot%C3%A1%2C+Colombia!5e0!3m2!1ses!2sus!4v1495851504461" width="400" height="300" frameborder="0" style="border:0" ></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-copyright">
+                        <div class="container">
+                            © 2017 Copyright Text
+                        </div>
+                    </div>
+                </footer>
+            </ui:insert>
+        </f:view>
+    </h:body>
+</html>

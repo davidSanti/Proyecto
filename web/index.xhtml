@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    <h:head>
+        <title>Sigueme</title>
+        <h:outputStylesheet library="css" name="style.css"/>
+        <h:outputStylesheet library="css" name="default.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css"></link>
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
+        <link rel="stylesheet" href="resources/css/style.css"></link>
+    </h:head>
+    <h:body>
+
+        <nav>
+            <h:form styleClass="nav-wrapper" style="padding-left: 300px !important;">
+                <a href="#" class="brand-logo logoSigueme right">
+                    <img src="resources/img/logo3.png" class="responsive-img" width="200px;"></img>
+                </a>
+                <p:menubar styleClass="center hide-on-med-and-down">
+                    <p:menuitem  target="_new" value="#{msgs['Index.Vision']}" url="http://www.javeriana.edu.co/documents/10179/4643808/Acuerdo+623.pdf/66f16f76-1b41-45e2-aeb0-ea5e6e69f73f"/>
+                    <p:menuitem  value="#{msgs['Index.Mission']}" oncomplete="PF('mision').show()"/>
+                    <p:menuitem  value="#{msgs['Index.Contact']}" oncomplete="PF('contacto').show()"/>
+                </p:menubar>
+            </h:form>
+        </nav>
+        <div class="row cont">
+            <div class="col s12 m6 offset-s3 offset-m3">
+                <div class="card">
+                    <div class="card horizontal">
+                        <div class="card-image">
+                            <img src="resources/img/fondo.jpg" class="responsive-img" style="height: 370px;"></img>
+                            <span class="card-title">#{msgs['Index.button']}</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="row">
+                                <h:form class="col s12" id="login">
+                                    <p:growl id="growlInci" showDetail="true" showSummary="false" sticky="false" life="2000"/> 
+                                    <div class="row">
+                                        <div class="input-field col s12">
+                                            <p:inputText id="cedula" required="true" requiredMessage="#{msgs['User.required.Message.identification']}"
+                                                         value="#{usuarioController.usuario.cedula}" styleClass="form-control">
+                                                <f:validateLength minimum="8" maximum="10"/>
+                                            </p:inputText>
+                                            <p:outputLabel for="cedula" value="#{msgs['Index.identification']}"/>
+
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="input-field col s12">
+                                            <p:password id="password" required="true" requiredMessage="#{msgs['User.required.Message.password']}"
+                                                        value="#{usuarioController.usuario.clave}" styleClass="form-control"/>
+                                            <p:outputLabel for="password" value="#{msgs['Index.password']}"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <p:commandButton id="iniciarSesion" value="#{msgs['Index.button']}" 
+                                                         action="#{usuarioController.autenticarUsuario()}"   
+                                                         styleClass="btn waves-effect waves-light"
+                                                         accesskey="" update="login">
+                                        </p:commandButton><br></br><br></br>
+                                        <p:commandLink style="margin-left: 17px;" value="#{msgs['Index.ForgotPassword']}" oncomplete="PF('password').show()"/>
+                                    </div>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p:dialog id="contacto" widgetVar="contacto" resizable="false" styleClass="modal"
+                  modal="true" closeOnEscape="true"
+                  showEffect="fade" hideEffect="fade">
+            <div class="row cont">
+                <h:form id="contactoForm" styleClass="col s12">
+                    <h5 class="center-title">#{msgs['Index.Contact']}</h5>
+                    <div class="input-field col s12">
+                        <p:inputText value="#{mensajeController.usuario.nombre}" id="nombreContacto"
+                                     required="true" requiredMessage="#{msgs['User.required.Message.name']}" 
+                                     pt:minlength="7" pt:maxlength="140" pt:required="true">
+                        <f:validateLength minimum="7" maximum="40"/>
+                        </p:inputText>
+                        <p:outputLabel value="#{msgs['Contact.User.name']}" for="nombreContacto"/>
+                    </div>
+                    <div class="input-field col s12">
+                        <p:inputText value="#{mensajeController.usuario.email}" validatorMessage="#{msgs['User.Validator.email']}" pt:type="email"
+                                     required="true" requiredMessage="#{msgs['User.required.Message.email']}" id="emailContacto"
+                                     pt:minlength="12" pt:maxlength="60" pt:required="true">
+                            <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                            <f:validateLength minimum="12" maximum="60"/>
+                        </p:inputText>
+                        <p:outputLabel value="#{msgs['Contact.User.email']}" for="emailContacto" />
+                    </div>
+                    <div class="input-field col s12">
+                        <p:inputTextarea value="#{mensajeController.mensajeContacto}" id="mensaje" autoResize="false" 
+                                         required="true" requiredMessage="#{msgs['Contact.Required.message']}" styleClass="materialize-textarea"
+                                         pt:minlength="10" pt:maxlength="200" pt:required="true">
+                        <f:validateLength minimum="10" maximum="200"/>
+                        </p:inputTextarea>
+                        <p:outputLabel value="#{msgs['Contact.Contact.message']}" for="mensaje"/>
+                    </div>
+                    <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" oncomplete="PF('contacto').hide()"
+                                     styleClass="btn waves-effect waves-light btn-warning"/>
+                    <p:commandButton value="#{msgs['Common.Modal.send.button']}"  styleClass="btn waves-effect waves-light" update=":login:growlInci"
+                                     action="#{mensajeController.enviarMensajeContacto()}"/>
+                </h:form>
+            </div>
+        </p:dialog>
+        <p:dialog id="password" widgetVar="password" modal="true"
+                  styleClass="modal" closeOnEscape="true"
+                  showEffect="fade" hideEffect="fade">
+            <div class="row cont">
+                <h:form styleClass="col s12" id="passwordForm">
+                    <h5 class="center-title">#{msgs['Index.PasswordRecovery']}</h5>
+                    <div class="input-field col s12">
+                        <p:inputText id="cedulaRecuperar" required="true" requiredMessage="#{msgs['User.required.Message.identification']}"
+                                     value="#{mensajeController.usuario.cedula}" styleClass="form-control" 
+                                     pt:type="number" pt:max="10" >
+                            <f:validateLength minimum="8" maximum="10"/>
+                        </p:inputText>
+                        <p:outputLabel for="cedulaRecuperar" value="#{msgs['Index.identification']}"/>
+
+                    </div>
+                    <div class="input-field col s12">
+                        <p:inputText id="Correo" value="#{mensajeController.usuario.email}" validatorMessage="#{msgs['User.Validator.email']}"
+                                     required="true" requiredMessage="#{msgs['User.required.Message.email']}">
+                            <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                            <f:validateLength minimum="12" maximum="60"/>
+                        </p:inputText>
+                        <p:outputLabel value="#{msgs['User.email']}" for="Correo"/>
+                    </div>
+                    <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" oncomplete="PF('password').hide()" 
+                                     styleClass="btn waves-effect waves-light btn-warning"/>
+                    <p:commandButton value="#{msgs['Common.Modal.send.button']}" update="login:growlInci"
+                                     action="#{mensajeController.recuperarContrasena()}" 
+                                     styleClass="btn waves-effect waves-light"/>
+                </h:form>
+            </div>
+        </p:dialog>
+
+
+        <p:dialog id="mision" widgetVar="mision"  modal="true"
+                  styleClass="modal" showEffect="fade" 
+                  hideEffect="fade" closeOnEscape="fade">
+            <div class="row">
+                <h:form styleClass="modal-content">
+                    <h5 class="center-title">#{msgs['Index.Mission']}</h5>
+                    <h:outputText value="
+                                   La Pontificia Universidad Javeriana es una institución católica de educación superior, fundada y regentada por la Compañía de Jesús, comprometida con los principios educativos y las orientaciones de la entidad fundadora.
+
+                                   Ejerce la docencia, la investigación y el servicio con excelencia, como universidad  integrada a un país de regiones, con perspectiva global e interdisciplinar, y se propone:
+
+                                   -la formación integral de personas que sobresalgan por su alta calidad humana, ética, académica, profesional y por su responsabilidad social; y,
+
+                                   - la creación y el desarrollo de conocimiento y de cultura en una perspectiva crítica e innovadora, para el logro de una sociedad justa, sostenible, incluyente, democrática, solidaria y respetuosa de la dignidad humana."/> 
+                </h:form>
+                <div class="modal-footer">
+                    <h:form>
+                        <p:commandButton value="#{msgs['Common.Modal.close']}" oncomplete="PF('mision').hide()"
+                                         styleClass="btn waves-effect waves-light btn-warning btn-close" />
+                    </h:form>
+                </div>
+            </div>
+        </p:dialog>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
+    </h:body>
+</html>
+

@@ -1,0 +1,340 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    <body>
+
+        <h:outputStylesheet library="css" name="style.css"/>
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+
+            <ui:define name="content">
+                <f:view>
+                    <div class="container">
+                        <h:form id="form">
+                            <h3 class="center-title">#{msgs['User.Table.title']}</h3>
+                            <p:growl id="growlUsers" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+
+                            <div class="fixed-action-btn toolbar">
+                                <a class="btn-floating btn-large red">
+                                    <i class="large material-icons">menu</i>
+                                </a>
+                                <ul>
+                                    <li class="waves-effect waves-light menu-exportPdf">
+                                        <h:commandLink>
+                                            <p:graphicImage url="/resources/img/pdf.png" width="55" height="58"/>
+                                            <p:dataExporter type="pdf" target="usersTable" fileName="#{msgs['User.Table.title']}"/>
+                                        </h:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light menu-exportXls">
+                                        <h:commandLink>
+                                            <p:graphicImage url="/resources/img/excel.png" width="40" height="40" style="margin-top: 9px;"/>
+                                            <p:dataExporter type="xls" target="usersTable" fileName="#{msgs['User.Table.title']}"/>
+                                        </h:commandLink>
+                                    </li>
+                                    <li class="waves-effect waves-light menu-register toUpperCase">
+
+                                        <p:commandLink value="#{msgs['User.Table.register']}"  actionListener="#{usuarioController.abrirModalRegistrar()}">
+                                        </p:commandLink>
+                                    </li>
+                                    <h:panelGroup rendered="#{usuarioController.verificarRol() eq true}">
+                                        <li class="waves-effect waves-light menu-upload toUpperCase">
+                                            <p:commandLink oncomplete="PF('masivoUsuarios').show()" 
+                                                           value="#{msgs['User.Table.attachUsers']}">
+                                            </p:commandLink>
+                                        </li>
+                                    </h:panelGroup>
+                                </ul>
+                            </div>
+
+                            <div class="card-content">
+                                <p:dataTable id="usersTable" emptyMessage="#{msgs['Common.Table.noRecords']}"
+                                             var="userTa" value="#{usuarioController.listarUsuarios()}"
+                                             paginator="true" paginatorPosition="bottom" rows="10">
+
+                                    <p:column headerText="#{msgs['User.identification']}" filterBy="#{userTa.cedula}" filterMatchMode="contains">
+                                        <h:outputText value="#{userTa.cedula}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['User.name']}" filterBy="#{userTa.nombre}" filterMatchMode="contains">
+                                        <h:outputText value="#{userTa.nombre}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['User.lastName']}" filterBy="#{userTa.apellido}" filterMatchMode="contains">
+                                        <h:outputText value="#{userTa.apellido}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['User.email']}" filterBy="#{userTa.email}" filterMatchMode="contains">
+                                        <h:outputText value="#{userTa.email}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['User.state']}" filterBy="#{userTa.estado}" filterMatchMode="contains" rendered="#{usuarioController.verificarRol() eq true}">
+                                        <h:outputText value="#{usuarioController.verificarEstado(userTa.estado)}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['User.role']}" filterBy="#{userTa.rolesUsuario.get(0).getDescripcion()}" exportable="false">
+                                        <p:dataList value="#{userTa.rolesUsuario}"
+                                                    type="definition"  var="rol"
+                                                    emptyMessage="#{msgs['User.Table.noRoleRecords']}">
+                                            <h:outputText value="#{rol.descripcion}"/>
+                                        </p:dataList>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Common.Table.action']}" width="100" exportable="false" styleClass="center-title">
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink   actionListener="#{usuarioController.editarUsuario(userTa)}" styleClass="acciones-editar"
+                                                             oncomplete="PF('editarUsuario').show()" update="modalUserr"
+                                                             disabled="#{usuarioController.verificarRolEnsesionParsEditar(userTa) eq true}">
+                                                <i class="material-icons">mode_edit</i> 
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink  update="usersTable, form:growlUsers" styleClass="acciones-eliminar"
+                                                            action="#{usuarioController.decidirSiAbrirDialo(1, userTa)}">
+                                                <p:confirm/>
+                                                <i class="material-icons">delete</i> 
+                                            </p:commandLink>
+                                        </li>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </h:form>
+                    </div>
+
+                    <h:form>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                            <div class="modal-content">
+                                <h5 class="center-title">#{msgs['Common.Table.deleteTitleModal']}</h5>
+                                <center> 
+                                    <p>#{msgs['Common.Table.deleteMessage']}</p>
+                                    <p:commandButton value="#{msgs['Common.Table.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes btn waves-effect waves-light"/>
+                                    <p:commandButton value="#{msgs['Common.Table.deleteNo']}" type="button" styleClass="ui-confirmdialog-no btn waves-effect waves-light btn-warning"/>
+                                </center>
+                            </div>
+                        </p:confirmDialog>
+                    </h:form>
+
+                    <p:dialog id="deleteUser" widgetVar="deleteUser" modal="true" draggable="false" 
+                              resizable="false" styleClass="modal"
+                              showEffect="fade" hideEffect="fade">
+                        <h:form styleClass="modal-content">
+                            <h5>#{msgs['Common.Table.confirm']}</h5>
+                            <div class="input-field col s12">
+                                <h:outputText value="#{msgs['Common.Modal.agree.text']}"/>
+                            </div>
+                            <div class="inpput-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 oncomplete="PF('deleteUser').hide()"/>
+                                <p:commandButton value="#{msgs['Common.Modal.agree.button']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{usuarioController.inactivarIncidenciasYOportunidadesAUsuarioElimiando()}" 
+                                                 update=":form:usersTable, :form:growlUsers" oncomplete="PF('deleteUser').hide()"/>
+                            </div>
+                        </h:form>  
+                    </p:dialog>
+                </f:view>
+
+                <p:dialog id="modalMasivo" resizable="false" closeOnEscape="true" draggable="false" closable="true"
+                          widgetVar="masivoUsuarios" modal="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                    <h:form enctype="multipart/form-data" styleClass="modal-content">
+                        <h5>#{msgs['User.Table.attachUsers']}</h5>
+                        <div class="row">
+                            <div class="file-field input-field col s12">
+                                <div class="btn">
+                                    <i class="material-icons">attach_file</i>
+                                    <p:fileUpload value="#{exportController.file}" mode="simple"
+                                                  required="true" pt:required="true"/>
+                                </div>
+                                <div class="file-path-wrapper">
+                                    <input class="file-path validate" type="text" placeholder="#{msgs['Common.Table.attachement']}"></input>
+                                </div>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true"
+                                                 oncomplete="PF('masivoUsuarios').hide()"
+                                                 styleClass="btn waves-effect waves-light btn-warning"/>
+
+                                <p:commandButton value="#{msgs['Common.Modal.send.button']}" ajax="false" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{exportController.cargaMasiva()}"
+                                                 update=":form:usersTable, :form:growlUsers"/>
+                            </div>
+
+                        </div>                        
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="modalRegisterUser" resizable="false" closeOnEscape="false"
+                          draggable="false" closable="false" widgetVar="registrarUsuario" 
+                          modal="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+
+                    <h:form id="registerUser" styleClass="modal-content">
+                        <h5>#{msgs['User.Table.register']}</h5>
+                        <p:growl id="growlRegisterUser" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText   id="cedula" required="true" requiredMessage="#{msgs['User.required.Message.identification']}"
+                                               validatorMessage="#{msgs['User.Validator.identification']}"
+                                               pt:type="number" maxlength="10"
+                                               value="#{usuarioController.usuario.cedula}">
+                                    <f:validateLength minimum="8" maximum="10"/>
+                                </p:inputText>
+                                <p:outputLabel for="cedula" value="#{msgs['User.identification']}"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputText   id="nombre" required="true" requiredMessage="#{msgs['User.required.Message.identification']}"
+                                               validatorMessage="#{msgs['User.Validator.name']}"
+                                               value="#{usuarioController.usuario.nombre}" maxlength="25">
+                                    <f:validateLength minimum="3" maximum="25" />
+                                    <f:validateRegex pattern="^[a-zA-Z\s]+$"/>
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['User.name']}"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputText   id="apellido" required="true" requiredMessage="#{msgs['User.required.Message.lastName']}"
+                                               validatorMessage="#{msgs['User.Validator.lastName']}"
+                                               value="#{usuarioController.usuario.apellido}" maxlength="25">
+                                    <f:validateLength minimum="3" maximum="25" />
+                                    <f:validateRegex pattern="^[a-zA-Z\s]+$"/>
+                                </p:inputText>
+                                <p:outputLabel for="apellido" value="#{msgs['User.lastName']}"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText   id="email" required="true" requiredMessage="#{msgs['User.required.Message.email']}"
+                                               validatorMessage="#{msgs['User.Validator.email']}"
+                                               pt:type="email" maxlength="35"
+                                               value="#{usuarioController.usuario.email}">
+                                    <f:validateLength minimum="15" maximum="35"/>
+                                    <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                                </p:inputText>
+                                <p:outputLabel for="email" value="#{msgs['User.email']}"/>
+                            </div>
+                            <p:outputLabel for="rls" value="#{msgs['User.role']}" styleClass="topOutputlabel"/>
+                            <h:selectManyCheckbox id="rls" value="#{usuarioController.usuario.rolesUsuario}"
+                                                  converter="rolConverter" required="true" 
+                                                  requiredMessage="#{msgs['User.required.Message.role']}"
+                                                  validatorMessage="#{msgs['User.Validator.role']}">
+
+                                <f:selectItems var="rl" value="#{usuarioController.roles}"
+                                               itemLabel="#{msgs[rl.descripcion]}" itemValue="#{rl}"/>
+
+                            </h:selectManyCheckbox>
+
+                            <div class="inpput-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 actionListener="#{usuarioController.ocultarModal(1)}"
+                                                 update=":form:usersTable, :form:growlUsers, growlRegisterUser"/>
+
+                                <p:commandButton id="editUser" value="#{msgs['Common.Modal.register']}" styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{usuarioController.ocultarModalRegistrar()}"
+                                                 update=":form:usersTable, :form:growlUsers, growlRegisterUser"/>                                
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+
+                <p:dialog id="modalUserr" resizable="false" 
+                          closeOnEscape="false" draggable="false" closable="false"
+                          widgetVar="editarUsuario" modal="true" styleClass="modal"
+                          showEffect="fade" hideEffect="fade">
+                    <h:form id="f" styleClass="modal-content">
+                        <h5>#{msgs['User.Modal.editModalTitle']}</h5>  
+                        <p:growl id="growlEditUser" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText   id="cedula" required="true" requiredMessage="#{msgs['User.required.Message.identification']}"
+                                               validatorMessage="#{msgs['User.Validator.identification']}"
+                                               pt:type="number" maxlength="10"
+                                               value="#{usuarioController.usuario.cedula}">
+                                    <f:validateLength minimum="8" maximum="10"/>
+                                </p:inputText>
+                                <p:outputLabel for="cedula" value="#{msgs['User.identification']}"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputText   id="nombre" required="true" requiredMessage="#{msgs['User.required.Message.identification']}"
+                                               validatorMessage="#{msgs['User.Validator.name']}"
+                                               value="#{usuarioController.usuario.nombre}" maxlength="25">
+                                    <f:validateLength minimum="3" maximum="25" />
+                                    <f:validateRegex pattern="^[a-zA-Z\s]+$"/>
+                                </p:inputText>
+                                <p:outputLabel for="nombre" value="#{msgs['User.name']}" styleClass="topOutputlabel"/>
+                            </div>
+
+                            <div class="input-field col s12">
+                                <p:inputText   id="apellido" required="true" requiredMessage="#{msgs['User.required.Message.lastName']}"
+                                               validatorMessage="#{msgs['User.Validator.lastName']}"
+                                               value="#{usuarioController.usuario.apellido}" maxlength="25">
+                                    <f:validateLength minimum="3" maximum="25" />
+                                    <f:validateRegex pattern="^[a-zA-Z\s]+$"/>
+                                </p:inputText>
+                                <p:outputLabel for="apellido" value="#{msgs['User.lastName']}" styleClass="topOutputlabel"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:inputText   id="email" required="true" requiredMessage="#{msgs['User.required.Message.email']}"
+                                               validatorMessage="#{msgs['User.Validator.email']}"
+                                               pt:type="email" maxlength="35"
+                                               value="#{usuarioController.usuario.email}">
+                                    <f:validateLength minimum="15" maximum="35"/>
+                                    <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                                </p:inputText>
+                                <p:outputLabel for="email" value="#{msgs['User.email']}" styleClass="topOutputlabel"/>
+                            </div>
+
+                        </div>
+
+                        <h:panelGroup rendered="#{usuarioController.verificarRol() eq true}">
+                            <p:outputLabel for="state" value="#{msgs['User.state']}" styleClass="topOutputlabel"/>
+                            <p:selectOneMenu id="state" value="#{usuarioController.usuario.estado}"
+                                             disabled="#{usuarioController.usuario.estado eq true}">
+                                <f:selectItem value="#{null}" itemLabel="Activo" itemValue="true"/>
+                                <f:selectItem value="#{null}" itemLabel="Inactivo" itemValue="false"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+                        <p:outputLabel for="rls" value="#{msgs['User.role']}" styleClass="topOutputlabel"/>
+                        <h:selectManyCheckbox id="rls" value="#{usuarioController.usuario.rolesUsuario}"
+                                              converter="rolConverter" required="true"
+                                              requiredMessage="#{msgs['User.required.Message.role']}">
+
+                            <f:selectItems var="rl" value="#{usuarioController.roles}"
+                                           itemLabel="#{msgs[rl.descripcion]}" itemValue="#{rl}"/>
+
+                        </h:selectManyCheckbox>
+
+                        <div class="row">
+                            <div class="inpput-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" 
+                                                 styleClass="btn waves-effect waves-light btn-warning"
+                                                 actionListener="#{usuarioController.cerrarModalEditar()}"
+                                                 update=":form:usersTable, :form:growlUsers, growlEditUser"/>
+
+                                <p:commandButton id="editUser" value="#{msgs['Common.Modal.save']}" 
+                                                 styleClass="btn waves-effect waves-light"
+                                                 actionListener="#{usuarioController.decidirSiAbrirDialo(2, null)}"
+                                                 update=":form:usersTable, :form:growlUsers, growlEditUser"/>                           
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

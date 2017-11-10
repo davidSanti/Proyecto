@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+        <h:outputStylesheet library="css" name="style.css"/>
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+
+            <ui:define name="content">
+                <h3 class="center-title">#{msgs['Permission.title']}</h3>
+
+                <div class="row">
+                    <h:form id="registerPermission" styleClass="col s4 margin-form">
+                        <h5 style="margin-top: 20px;">#{msgs['Permission.Form.register']}</h5>
+                        <p:separator/>
+                        <p:growl id="growlRegisterPermission" showDetail="true" showSummary="false" sticky="false" life="3000"/> 
+
+                        <div class="row" >
+                            <div class="input-field col s12">
+                                <p:inputText id="descripcion" value="#{permisoController.permiso.descripcion}"
+                                             required="true" requiredMessage="#{msgs['Permission.required.Message.description']}"/>
+                                <p:outputLabel for="descripcion" value="#{msgs['Permission.description']}"/>                 
+                            </div>                            
+                        </div>
+
+                        <div class="row" >
+                            <p:selectOneMenu id="tipo" value="#{permisoController.permiso.tipo}"
+                                             required="true" requiredMessage="#{msgs['Permission.required.Tooltip.type']}">
+                                <f:selectItem value="#{null}" noSelectionOption="true" itemLabel="#{msgs['Common.Modal.Select.type']}" />
+                                <f:selectItem value="#{null}" itemLabel="#{msgs['Permission.Menu']}" itemValue="#{permisoController.volverFalso()}"/>
+                                <f:selectItem value="#{null}" itemLabel="#{msgs['Permission.SubMenu']}" itemValue="#{permisoController.volverVerdadero()}"/>
+                            </p:selectOneMenu>
+                        </div>  
+
+                        <div class="row">
+                            <p:selectOneMenu id="dependencia" value="#{permisoController.permiso.dependencia}"
+                                             converter="permisoConverter">
+                                <f:selectItem value="#{null}" noSelectionOption="true" itemLabel="#{msgs['Permission.Form.selectDependency']}" />
+                                <f:selectItems value="#{permisoController.listarPermisos()}" var="item" 
+                                               itemLabel="#{msgs[item.descripcion]}" itemValue="#{item}"/>
+                            </p:selectOneMenu>
+
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="url" value="#{permisoController.permiso.url}" autoResize="false"
+                                                 required="true" requiredMessage="#{msgs['Permission.required.Message.url']}"
+                                                 rows="2" cols="22" styleClass="materialize-textarea"/>
+                                <p:outputLabel for="url" value="#{msgs['Permission.url']}"/>                         
+                            </div>
+
+                            <div class="input-field col s12">
+                                <input type="reset" value="#{msgs['Common.Modal.Button.reset']}" Class="btn waves-effect waves-light btn-warning margin-buton" />
+                                <p:commandButton value="#{msgs['Common.Modal.register']}" styleClass="btn waves-effect waves-light"
+                                                 action="#{permisoController.registrarPermiso()}"
+                                                 update="growlRegisterPermission, :tablePermissionForm:tablePermission, :formRol:permisosRol"/>
+                            </div>
+                        </div>
+                    </h:form>                
+
+
+                    <div class="row">
+                        <h:form id="tablePermissionForm" styleClass="col s6 margin-formTable">
+                            <p:growl id="growlTablePermission" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                            <div class="card-content">
+                                <p:dataTable id="tablePermission" value="#{permisoController.listarPermisos()}" var="permission"
+                                             emptyMessage="#{msgs['Common.Table.noRecords']}"  styleClass="margin-table"
+                                             paginator="true" paginatorPosition="bottom" rows="10">
+
+                                    <p:column headerText="#{msgs['Permission.description']}">
+                                        <h:outputText value="#{msgs[permission.descripcion]}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Permission.type']}">
+                                        <h:outputText value="#{msgs[permisoController.verificarDependencia(permission)]}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Permission.dependency']}">
+                                        <h:outputText value="#{msgs[permission.dependencia.descripcion]}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Common.Table.action']}" styleClass="center-title">
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink  update="editPermission" styleClass="acciones-editar"
+                                                            oncomplete="PF('editPermission').show()" 
+                                                            action="#{permisoController.editarPermiso(permission)}">
+                                                <i class="material-icons" >mode_edit</i>
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink  update="tablePermissionForm:tablePermission, tablePermissionForm:growlTablePermission, :formRol:permisosRol"
+                                                            action="#{permisoController.eliminarPermiso(permission)}" 
+                                                            styleClass="acciones-eliminar">
+                                                <p:confirm/>
+                                                <i class="material-icons">delete</i>
+                                            </p:commandLink>
+                                        </li>  
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+
+                <h:form>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="modal">
+                        <div class="modal-content">
+                            <h5 class="center-title">#{msgs['Common.Table.deleteTitleModal']}</h5>
+                            <center> 
+                                <p>#{msgs['Common.Table.deleteMessage']}</p>
+                                <p:commandButton value="#{msgs['Common.Table.deleteYes']}" type="button" styleClass="ui-confirmdialog-yes btn waves-effect waves-light"/>
+                                <p:commandButton value="#{msgs['Common.Table.deleteNo']}" type="button" styleClass="ui-confirmdialog-no btn waves-effect waves-light btn-warning"/>
+                            </center>
+                        </div>
+                    </p:confirmDialog>
+                </h:form>  
+
+                <p:separator/>
+
+                <h3 class="center-title">#{msgs['Role.title']}</h3>                
+                <div class="row">
+                    <h:form id="formRol" styleClass="col s4 margin-form">
+                        <p:growl id="growlRegisterRole" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+                        <h5>#{msgs['Role.register.title']}</h5>
+                        <p:separator/>
+
+                        <div class="row">    
+                            <div class="input-field col s12">
+                                <p:inputText id="rolDescripcion" value="#{permisoController.rol.descripcion}"
+                                             required="true" requiredMessage="#{msgs['Role.required.Message.description']}"/>
+                                <p:outputLabel for="rolDescripcion" value="#{msgs['Role.description']}"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <p:selectCheckboxMenu id="permisosRol" label="#{msgs['Role.permissions']}" converter="permisoConverter" filter="true"
+                                                  required="true" requiredMessage="#{msgs['Role.required.Message.permissions']}"
+                                                  value="#{permisoController.rol.permisosRol}" >
+                                <f:selectItems value="#{permisoController.listarPermisos()}" var="per"
+                                               itemLabel="#{msgs[per.descripcion]}" itemValue="#{per}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <input type="reset" value="#{msgs['Common.Modal.Button.reset']}" Class="btn waves-effect waves-light btn-warning margin-buton"/>
+                                <p:commandButton value="#{msgs['Common.Modal.register']}" update="formRol:growlRegisterRole, :formTableRole:rol "
+                                                 action="#{permisoController.registrarRol()}" styleClass="btn waves-effect waves-light"/>
+                            </div>
+                        </div>
+                    </h:form>
+
+                    <div class="row">
+                        <h:form id="formTableRole" styleClass="col s6 margin-formTable">
+                            <p:growl id="growTablerRole" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+                            <div class="card-content">
+                                <p:dataTable id="rol" var="role" value="#{permisoController.listarRoles()}"
+                                             emptyMessage="#{msgs['Common.Table.noRecords']}" styleClass="margin-table"
+                                             paginator="true" paginatorPosition="bottom" rows="10">
+
+                                    <p:column headerText="#{msgs['Role.description']}">
+                                        <h:outputText value="#{msgs[role.descripcion]}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['User.state']}">
+                                        <h:outputText value="#{msgs[role.estado]}"/>
+                                    </p:column>
+
+                                    <p:column headerText="#{msgs['Common.Table.action']}" styleClass="center-title">
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink  oncomplete="PF('editRol').show()"
+                                                            update="editRol" action="#{permisoController.editarRol(role)}"
+                                                            styleClass="acciones-editar">
+                                                <i class="material-icons">mode_edit</i>
+                                            </p:commandLink>
+                                        </li>  
+                                        <li class="waves-effect waves-light">
+                                            <p:commandLink  update="rol, formTableRole:growTablerRole"
+                                                            action="#{permisoController.eliminarRol(role)}"
+                                                            disabled="#{(role.rolID eq 4) eq true}"
+                                                            styleClass="acciones-eliminar">
+                                                <p:confirm icon="ui-icon-alert"/>
+                                                <i class="material-icons">delete</i>
+                                            </p:commandLink>
+                                        </li>  
+                                    </p:column>
+                                </p:dataTable>  
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+
+                <p:dialog id="editPermission" widgetVar="editPermission" modal="true"
+                          closable="false" resizable="false" styleClass="modal" >
+                    <h:form id="formEditPermission" styleClass="modal-content">
+                        <h5>#{msgs['Permission.Modal.title']}</h5>
+                        <p:growl id="growlEditPermission" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row" >
+                            <div class="input-field col s12">
+                                <p:inputText id="descripcion" value="#{permisoController.permiso.descripcion}"
+                                             required="true" requiredMessage="#{msgs['Permission.required.Message.description']}"/>
+                                <p:outputLabel for="descripcion" value="#{msgs['Permission.description']}"/>                 
+                            </div>                            
+                        </div>
+
+                        <div class="row" >
+                            <p:selectOneMenu id="tipo" value="#{permisoController.permiso.tipo}"
+                                             required="true" requiredMessage="#{msgs['Permission.required.Tooltip.type']}">
+                                <f:selectItem value="#{null}" noSelectionOption="true" itemLabel="#{msgs['Common.Modal.Select.type']}" />
+                                <f:selectItem value="#{null}" itemLabel="#{msgs['Permission.Menu']}" itemValue="#{permisoController.volverFalso()}"/>
+                                <f:selectItem value="#{null}" itemLabel="#{msgs['Permission.SubMenu']}" itemValue="#{permisoController.volverVerdadero()}"/>
+                            </p:selectOneMenu>
+                        </div>  
+
+                        <div class="row" >
+                            <p:selectOneMenu id="dependencia" value="#{permisoController.permiso.dependencia}"
+                                             converter="permisoConverter" styleClass="algo" >
+                                <f:selectItem value="#{null}" noSelectionOption="true" itemLabel="#{msgs['Permission.Form.selectDependency']}" />
+                                <f:selectItems value="#{permisoController.listarPermisos()}" var="item" 
+                                               itemLabel="#{msgs[item.descripcion]}" itemValue="#{item}"/>
+                            </p:selectOneMenu>
+
+                            <div class="input-field col s12">
+                                <p:inputTextarea id="url" value="#{permisoController.permiso.url}" autoResize="false"
+                                                 required="true" requiredMessage="#{msgs['Permission.required.Message.url']}"
+                                                 rows="2" cols="22" styleClass="materialize-textarea"/>
+                                <p:outputLabel for="url" value="#{msgs['Permission.url']}" styleClass="topOutputlabel"/>                         
+                            </div>
+
+                            <div class="input-field col s12"> 
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true"
+                                                 action="#{permisoController.ocultarModales(1)}" styleClass="btn waves-effect waves-light btn-warning"/>
+                                <p:commandButton value="#{msgs['Common.Modal.save']}" update="formEditPermission:growlEditPermission, :formTableRole:rol, :tablePermissionForm:tablePermission, :formRol:permisosRol"
+                                                 action="#{permisoController.editarPermiso()}" styleClass="btn waves-effect waves-light"/>
+                            </div>
+
+                        </div>
+                    </h:form> 
+                </p:dialog>
+
+
+                <p:dialog id="editRol" widgetVar="editRol" modal="true"
+                          closable="false" resizable="false" styleClass="modal" >
+                    <h:form id="formEditRol" styleClass="modal-content">
+                        <h5>#{msgs['Role.Modal.title']}</h5>
+                        <p:growl id="growlEditRole" showDetail="true" showSummary="false" sticky="false" life="1500"/> 
+
+                        <div class="row">    
+                            <div class="input-field col s12">
+                                <p:inputText id="rolDescripcion" value="#{permisoController.rol.descripcion}"
+                                             required="true" requiredMessage="#{msgs['Role.required.Message.description']}"/>
+                                <p:outputLabel for="rolDescripcion" value="#{msgs['Role.description']}"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <p:selectCheckboxMenu id="permisosRol" label="#{msgs['Role.permissions']}" converter="permisoConverter" filter="true"
+                                                  required="true" requiredMessage="#{msgs['Role.required.Message.permissions']}"
+                                                  value="#{permisoController.rol.permisosRol}" >
+                                <f:selectItems value="#{permisoController.listarPermisos()}" var="per"
+                                               itemLabel="#{msgs[per.descripcion]}" itemValue="#{per}"/>
+                            </p:selectCheckboxMenu>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <p:commandButton value="#{msgs['Common.Modal.close']}" immediate="true" styleClass="btn waves-effect waves-light btn-warning"
+                                                 action="#{permisoController.ocultarModales(2)}"/>
+                                <p:commandButton value="#{msgs['Common.Modal.save']}" styleClass="btn waves-effect waves-light"
+                                                 update="formEditRol:growlEditRole, :formTableRole:rol "
+                                                 action="#{permisoController.editarRol()}"/>
+                            </div>
+                        </div>
+                    </h:form> 
+                </p:dialog>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

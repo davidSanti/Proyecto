@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <header>
+        <script src="https://www.amcharts.com/lib/3/amcharts.js"></script>
+        <script src="https://www.amcharts.com/lib/3/serial.js"></script>
+        <script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+        <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+        <script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+        <script src="https://www.amcharts.com/lib/3/pie.js"></script>
+        <link rel="stylesheet" href="../../resources/css/style.css"></link>
+    </header>
+    <body>
+        <ui:composition template="./../../resources/templates/plantilla.xhtml">
+            <ui:define name="content">
+                <h:form id="formChart">
+                    <p:inputText id="dataStr" value="#{graficasController.dataStr}" style="display: none"/>
+                    <p:inputText id="dataPie" value="#{graficasController.dataPie}" style="display: none"/>
+                </h:form>
+                <div class="chartDash" id="barChart"></div>
+                <div class="chartDash" id="circleChart"></div>
+                <script>
+                    var dataSourceBarChart = JSON.parse(document.getElementById("formChart:dataStr").value);
+                    var barChart = AmCharts.makeChart("barChart", {
+                        "theme": "light",
+                        "type": "serial",
+                        "titles": [{
+                                "text": "Incicencias por categoria",
+                                "size": 16
+                            }],
+                        "startDuration": 4,
+                        "dataProvider": dataSourceBarChart,
+                        "valueAxes": [{
+                                "position": "left",
+                                "axisAlpha": 0,
+                                "gridAlpha": 0
+                            }],
+                        "graphs": [{
+                                "balloonText": "[[category]]: <b>[[value]]</b>",
+                                "colorField": "color",
+                                "fillAlphas": 0.85,
+                                "lineAlpha": 0.1,
+                                "type": "column",
+                                "topRadius": 1,
+                                "valueField": "cuenta"
+                            }],
+                        "depth3D": 40,
+                        "angle": 30,
+                        "chartCursor": {
+                            "categoryBalloonEnabled": false,
+                            "cursorAlpha": 0,
+                            "zoomable": false
+                        },
+                        "categoryField": "nombre",
+                        "categoryAxis": {
+                            "gridPosition": "start",
+                            "axisAlpha": 0,
+                            "gridAlpha": 0
+
+                        },
+                        "export": {
+                            "enabled": true,
+                            "pageOrigin": false
+                        }
+                    }, 0);
+                </script>
+                <script>
+                    var dataSourcePieChart = JSON.parse(document.getElementById("formChart:dataPie").value);
+                    var circleChart = AmCharts.makeChart("circleChart", {
+                        "type": "pie",
+                        "startEffect": "elastic",
+                        "startDuration": 5,
+                        "theme": "light",
+                        "titles": [{
+                                "text": "Incicencias por agente en el actual mes",
+                                "size": 16
+                            }],
+                        "addClassNames": true,
+                        "legend": {
+                            "position": "right",
+                            "marginRight": 100,
+                            "autoMargins": false
+                        },
+                        "innerRadius": "30%",
+                        "defs": {
+                            "filter": [{
+                                    "id": "shadow",
+                                    "width": "200%",
+                                    "height": "200%",
+                                    "feOffset": {
+                                        "result": "offOut",
+                                        "in": "SourceAlpha",
+                                        "dx": 0,
+                                        "dy": 0
+                                    },
+                                    "feGaussianBlur": {
+                                        "result": "blurOut",
+                                        "in": "offOut",
+                                        "stdDeviation": 5
+                                    },
+                                    "feBlend": {
+                                        "in": "SourceGraphic",
+                                        "in2": "blurOut",
+                                        "mode": "normal"
+                                    }
+                                }]
+                        },
+                        "dataProvider": dataSourcePieChart,
+                        "valueField": "cuenta",
+                        "titleField": "nombre",
+                        "export": {
+                            "enabled": true,
+                            "pageOrigin": false
+                        }
+                    });
+
+                    circleChart.addListener("init", handleInit);
+
+                    circleChart.addListener("rollOverSlice", function (e) {
+                        handleRollOver(e);
+                    });
+
+                    function handleInit() {
+                        circleChart.legend.addListener("rollOverItem", handleRollOver);
+                    }
+
+                    function handleRollOver(e) {
+                        var wedge = e.dataItem.wedge.node;
+                        wedge.parentNode.appendChild(wedge);
+                    }
+                </script>
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>
